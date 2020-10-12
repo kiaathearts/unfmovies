@@ -5,7 +5,13 @@
 //create htaccess file from f3 
 //enable ssl on php.ini - dev and prod and standard
 
-require '/home/kia/vendor/autoload.php';
+
+ if(!$_SERVER['REMOTE_ADDR']=='::1'){
+    require 'vendor/autoload.php';
+ } else {
+    require '/home/kia/vendor/autoload.php';
+}  
+
 
 $f3 = \Base::instance();
 $f3->set('head', 'templates/head.htm');
