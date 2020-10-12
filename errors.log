@@ -1427,3 +1427,31 @@
 [11-Oct-2020 20:28:07 America/New_York] [index.php:238] Base->run()
 [11-Oct-2020 20:29:00 America/New_York] HTTP 404 (GET /favicon.ico)
 [11-Oct-2020 20:29:00 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 18:59:29 America/New_York] Fatal error: PHP Startup: Unable to load dynamic library 'openssl' (tried: /usr/lib/php/20170718/openssl (/usr/lib/php/20170718/openssl: cannot open shared object file: No such file or directory), /usr/lib/php/20170718/openssl.so (/usr/lib/php/20170718/openssl.so: cannot open shared object file: No such file or directory))
+[12-Oct-2020 18:59:29 America/New_York] [Unknown:0] 
+[12-Oct-2020 18:59:29 America/New_York] Fatal error: PHP Startup: Unable to load dynamic library 'openssl' (tried: /usr/lib/php/20170718/openssl (/usr/lib/php/20170718/openssl: cannot open shared object file: No such file or directory), /usr/lib/php/20170718/openssl.so (/usr/lib/php/20170718/openssl.so: cannot open shared object file: No such file or directory))
+[12-Oct-2020 18:59:29 America/New_York] [Unknown:0] 
+[12-Oct-2020 18:59:34 America/New_York] Fatal error: PHP Startup: Unable to load dynamic library 'openssl' (tried: /usr/lib/php/20170718/openssl (/usr/lib/php/20170718/openssl: cannot open shared object file: No such file or directory), /usr/lib/php/20170718/openssl.so (/usr/lib/php/20170718/openssl.so: cannot open shared object file: No such file or directory))
+[12-Oct-2020 18:59:34 America/New_York] [Unknown:0] 
+[12-Oct-2020 18:59:37 America/New_York] Fatal error: PHP Startup: Unable to load dynamic library 'openssl' (tried: /usr/lib/php/20170718/openssl (/usr/lib/php/20170718/openssl: cannot open shared object file: No such file or directory), /usr/lib/php/20170718/openssl.so (/usr/lib/php/20170718/openssl.so: cannot open shared object file: No such file or directory))
+[12-Oct-2020 18:59:37 America/New_York] [Unknown:0] 
+[12-Oct-2020 18:59:42 America/New_York] Fatal error: PHP Startup: Unable to load dynamic library 'openssl' (tried: /usr/lib/php/20170718/openssl (/usr/lib/php/20170718/openssl: cannot open shared object file: No such file or directory), /usr/lib/php/20170718/openssl.so (/usr/lib/php/20170718/openssl.so: cannot open shared object file: No such file or directory))
+[12-Oct-2020 18:59:42 America/New_York] [Unknown:0] 
+[12-Oct-2020 19:00:08 America/New_York] HTTP 404 (GET /favicon.ico)
+[12-Oct-2020 19:00:08 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 19:09:06 America/New_York] HTTP 404 (GET /favicon.ico)
+[12-Oct-2020 19:09:06 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 19:11:14 America/New_York] Fatal error: PHP Startup: Unable to load dynamic library 'openssl' (tried: /usr/lib/php/20170718/openssl (/usr/lib/php/20170718/openssl: cannot open shared object file: No such file or directory), /usr/lib/php/20170718/openssl.so (/usr/lib/php/20170718/openssl.so: cannot open shared object file: No such file or directory))
+[12-Oct-2020 19:11:14 America/New_York] [Unknown:0] 
+[12-Oct-2020 19:11:20 America/New_York] HTTP 404 (GET /favicon.ico)
+[12-Oct-2020 19:11:20 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 19:13:14 America/New_York] HTTP 404 (GET /favicon.ico)
+[12-Oct-2020 19:13:14 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 19:13:29 America/New_York] HTTP 404 (GET /favicon.ico)
+[12-Oct-2020 19:13:29 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 19:13:54 America/New_York] HTTP 404 (GET /)
+[12-Oct-2020 19:13:54 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 19:15:18 America/New_York] HTTP 404 (GET /favicon.ico)
+[12-Oct-2020 19:15:18 America/New_York] [index.php:238] Base->run()
+[12-Oct-2020 19:22:56 America/New_York] HTTP 404 (GET /favicon.ico)
+[12-Oct-2020 19:22:56 America/New_York] [index.php:238] Base->run()
