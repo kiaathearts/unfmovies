@@ -6,8 +6,8 @@
 //enable ssl on php.ini - dev and prod and standard
 
 
- if(!$_SERVER['REMOTE_ADDR']=='::1'){
-    require 'vendor/autoload.php';
+ if($_SERVER['REMOTE_ADDR']!='::1'){
+    require '../vendor/autoload.php';
  } else {
     require '/home/kia/vendor/autoload.php';
 }  
