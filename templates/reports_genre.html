@@ -1,0 +1,56 @@
+<div class="container">
+		<div class="row">
+		<div class="col">
+			<p class="h1 mb-3">Revenue Report by Genre</p>
+		</div>
+	</div>
+	<div class="row mb-3">
+		<div class="col">
+			<form class="form-inline">
+			    <div class="dropdown">
+				  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				    Dropdown button
+				  </button>
+				  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+	  				<repeat group="{{ @genre }}" value="{{ @genre }}">
+				    	<i class="dropdown-item" href="#">{{ trim(@genre) }}</i>
+					</repeat>
+				  </div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div class="row">
+         <div class="form-check-inline">
+		  <label class="form-check-label">
+		    <input type="radio" class="form-check-input" name="opttimetype">Weekly
+		  </label>
+		</div>
+		<div class="form-check-inline">
+		  <label class="form-check-label">
+		    <input type="radio" class="form-check-input" name="opttimetype">Monthly
+		  </label>
+		</div>
+		<div class="form-check-inline">
+		  <label class="form-check-label">
+		    <input type="radio" class="form-check-input" name="opttimetype">Yearly
+		  </label>
+		</div>
+	</div>
+	<div class="row">
+		
+	</div>
+	<div class="row">
+		<div class="col">
+			<p class="h3 mb-3">No data searched</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<p class="h3">Total Sales</p>
+			<p class="h4">Rentals to Date: </p>
+			<p class="h4">Purchased to Date: </p>
+			<p class="h4">Total: </p>
+		</div>
+	</div>
+</div>

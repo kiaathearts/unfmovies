@@ -1,0 +1,42 @@
+body{ 
+    background-color: #FFB85F;  
+}
+.main-section{
+    position: relative;
+    top:50%;
+    left:50%;
+    right: 50%;
+    box-shadow: 1px 1px 15px #FF6EB0;
+    font-family: 'Abel', sans-serif;
+    background-color: #E45641;
+    transform: translate(-50%,50%);
+}
+.rating-star{
+    position: relative;
+    left:50%;
+    right:50%;
+    transform: translate(-75%,0%);
+}
+.rating-star > input { display: none; } 
+.rating-star > label:before { 
+  margin: 5px;
+  font-size:30px;
+  font-family: FontAwesome;
+  display: inline-block;
+  content: "\f005";
+}
+.rating-star > .half:before { 
+  content: "\f089";
+  position: absolute;
+}
+.rating-star > label { 
+  color: #ddd; 
+ float: right; 
+}
+.rating-star > input:checked ~ label,
+.rating-star:not(:checked) > label:hover,
+.rating-star:not(:checked) > label:hover ~ label { color: #FFD700;  }
+.rating-star > input:checked + label:hover,
+.rating-star > input:checked ~ label:hover,
+.rating-star > label:hover ~ input:checked ~ label,
+.rating-star > input:checked ~ label:hover ~ label { color: #FFED85;  } 
