@@ -7,7 +7,7 @@
 
 
  if($_SERVER['REMOTE_ADDR']!='::1'){
-    require '../vendor/autoload.php';
+    require 'vendor/autoload.php';
  } else {
     require '/home/kia/vendor/autoload.php';
 }  
