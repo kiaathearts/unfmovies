@@ -3,7 +3,15 @@
 	<div class="jumbotron jumbotron-fluid"></div>
 	<div class="row mb-2">
 		<div class="col offset-md-1">
-			<p class="display-2"><?= ($movie['title']) ?></p>
+			<p class="display-2"><?= ($movie_title) ?></p>
+		</div>
+	</div>
+	<div class="row mb-2">
+		<div class="col offset-md-1">
+			<?= ($cart->set('item', $movie_title))."
+" ?>
+			<p class="display-2"><?= ($cart->get('item')) ?></p>
+			<p class="display-2"><?= ($cart2->get('otheritem')) ?></p>
 		</div>
 	</div>
 	<!--------------------MOVIE DATA-------------------------------->
@@ -14,14 +22,14 @@
 	</div>
 	<div class="row">
 		<div class="col offset-md-1">
-			<h5 style="display:inline"><strong>Director:</strong></h5><?= ($movie['first_name']) ?> <?= ($movie['last_name'])."
+			<h5 style="display:inline"><strong>Director:</strong></h5><?= ($director)."
 " ?>
 			<h5 style="margin-bottom:0"><strong>Cast:</strong></h5>
 			<?php foreach (($actors?:[]) as $actor): ?>
 			    <?= (trim($actor)) ?> |
 			<?php endforeach; ?>
 			<h5 style="margin-bottom:0"><strong>Synopsis: </strong></h5>
-				<?= (trim($movie['description']))."
+				<?= (trim($synopsis))."
 " ?>
 		</div>
 	</div>
@@ -46,7 +54,7 @@
 			  <div class="modal-dialog" role="document">
 			    <div class="modal-content">
 			      <div class="modal-header">
-			        <h5 class="modal-title" id="exampleModalLabel">Add <?= ($movie['title']) ?> to Cart</h5>
+			        <h5 class="modal-title" id="exampleModalLabel">Add <?= ($movie_title) ?> to Cart</h5>
 			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 			          <span aria-hidden="true">&times;</span>
 			        </button>
@@ -90,12 +98,26 @@
 				<p>You can add 1 more rental to your cart</p>
 			      <div class="modal-footer">
 			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-<!-- 			        <form method="post" action="/movies/cart/add/purchase/<?= ($movie_title) ?>">
-			        	<button type="submit" class="btn btn-primary">Add Purchase to Cart</button>
-			        </form> -->
-			        <form method="post" action="/movies/cart/add/rental/<?= ($movie['movie_id']) ?>">
-			        	<button type="submit" class="btn btn-primary">Add Rental to Cart</button>
-			        </form>
+			        <script>
+			        	/**
+			        	Store all cart info to global variables and then
+			        	submit to database on checkout
+			        	**/
+			        	function add(){
+			        		// $var = <?= ($movie_title) ?>;
+			        		alert('too');
+			        		// $movie = array('movieid=>\''+movieid+'\'');
+			        			// alert(movieid);
+						  // $.ajax({
+						  //   type: "POST",
+						  //   url: "index.php",
+						  //   data: { name: "John" }
+						  // }).done(function( msg ) {
+						  //   alert( "Data Saved: " + msg );
+						  // });
+			        	}
+			        </script>
+			        <button type="button" onclick="add();" class="btn btn-primary" id="cartBtn">Add to Cart</button>
 			      </div>
 			    </div>
 			  </div>

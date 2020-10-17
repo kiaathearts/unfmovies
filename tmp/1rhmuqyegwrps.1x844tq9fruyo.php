@@ -25,7 +25,7 @@
 		<div class="col cols-1"></div>
 	</div>
 	<div class="row">
-		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/admin/pricing">Adjust Pricing</a></div>
+		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/admin/1/pricing">Adjust Pricing</a></div>
 		<div class="col cols-1"></div>
 		<div class="col cols-1"></div>
 	</div>

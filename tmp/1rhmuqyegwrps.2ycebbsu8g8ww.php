@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="login.css">    
+	<link rel="stylesheet" href="../css/login.css">    
     <title>Login</title>
 </head>
 <body class="login-body">
@@ -14,9 +14,16 @@
         <div class="card mx-auto text-light login">
 	  <h5 class="card-header bg-info">Welcome to UNFMovies!</h5>
 	  <div class="card-body">
-	    <form>
-	    	<input type="email" class="form-control p-1 m-1" placeholder="youremail@email.com">
-	    	<input type="password" class="form-control p-1 m-1" placeholder="password">
+	    <form method="post" action="/login">
+	    	<?php if ($admin_login==true): ?>
+				<a href="/login">Customer Login</a>
+	    		<input type="text" class="form-control p-1 m-1" placeholder="username" name="username">
+	    	<?php endif; ?>
+	    	<?php if ($admin_login==false): ?>
+				<a href="/admin/login">Admin Login</a>
+	    		<input type="email" class="form-control p-1 m-1" placeholder="youremail@email.com" name="email">
+	    	<?php endif; ?>
+	    	<input type="password" class="form-control p-1 m-1" placeholder="password" name="password">
 	    	<button type="submit" class="btn btn-info btn-lg btn-block">Login</button>
 	    	<p class="text-secondary">Don't have an account? <a href="">Sign Up</a></p>
 	    </form>

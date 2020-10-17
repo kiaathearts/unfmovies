@@ -1,10 +1,12 @@
 <div class="container">
+	<!---------------This is where the movie image should display-------------->
 	<div class="jumbotron jumbotron-fluid"></div>
 	<div class="row mb-2">
 		<div class="col offset-md-1">
-			<p class="display-2">{{ $movie_title }}</p>
+			<p class="display-2">{{ @movie['title'] }}</p>
 		</div>
 	</div>
+	<!--------------------MOVIE DATA-------------------------------->
 	<div class="row">
 		<div class="col offset-md-1">
 			<h4>Available in {{ @formats_display_string }}</h4>			
@@ -12,13 +14,13 @@
 	</div>
 	<div class="row">
 		<div class="col offset-md-1">
-			<h5 style="display:inline"><strong>Director:</strong></h5>{{ $director }}
+			<h5 style="display:inline"><strong>Director:</strong></h5>{{ @movie['first_name'] }} {{ @movie['last_name'] }}
 			<h5 style="margin-bottom:0"><strong>Cast:</strong></h5>
 			<repeat group="{{ @actors }}" value="{{ @actor }}">
 			    {{ trim(@actor) }} |
 			</repeat>
 			<h5 style="margin-bottom:0"><strong>Synopsis: </strong></h5>
-				{{ trim(@synopsis) }}
+				{{ trim(@movie['description']) }}
 		</div>
 	</div>
 	<div class="row mb-5">
@@ -30,19 +32,19 @@
 			</repeat>
 		</div>
 	</div>
+
 	<div class="row mb-5">
 		<div class="col offset-md-1">
-			<!-- Button trigger modal -->
 			<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addToCart">
 			  Add to Cart
 			</button>
 
-			<!-- Modal -->
+			<!-------------------- ADD TO CART ---------------------------->
 			<div class="modal fade" id="addToCart" tabindex="-1" role="dialog" aria-labelledby="addToCart" aria-hidden="true">
 			  <div class="modal-dialog" role="document">
 			    <div class="modal-content">
 			      <div class="modal-header">
-			        <h5 class="modal-title" id="exampleModalLabel">Add {{ @movie_title }} to Cart</h5>
+			        <h5 class="modal-title" id="exampleModalLabel">Add {{ @movie['title'] }} to Cart</h5>
 			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 			          <span aria-hidden="true">&times;</span>
 			        </button>
@@ -86,13 +88,18 @@
 				<p>You can add 1 more rental to your cart</p>
 			      <div class="modal-footer">
 			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-			        <button type="button" class="btn btn-primary">Add to Cart</button>
+<!-- 			        <form method="post" action="/movies/cart/add/purchase/{{ @movie_title }}">
+			        	<button type="submit" class="btn btn-primary">Add Purchase to Cart</button>
+			        </form> -->
+			        <form method="post" action="/movies/cart/add/rental/{{ @movie['movie_id'] }}">
+			        	<button type="submit" class="btn btn-primary">Add Rental to Cart</button>
+			        </form>
 			      </div>
 			    </div>
 			  </div>
 			</div>
 
-			<!-- Button trigger modal -->
+			<!-------------------- REVIEW ---------------------------->
 			<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#leaveAReview">
 			  Leave a Review
 			</button>
@@ -132,7 +139,6 @@
 			    </div>
 			  </div>
 			</div>
-			<!-- <button type="button" class="btn btn-secondary">Leave a Review</button>	 -->
 		</div>
 	</div>
 </div>
