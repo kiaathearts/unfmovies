@@ -6,8 +6,8 @@
 	</div>
 	<div class="row mb-3">
 		<div class="col">
-			<form class="form-inline">
-			    <input class="form-control mr-sm-2" type="search" placeholder="Customer Email" aria-label="Search">
+			<form method="post" action="/admin/customer" class="form-inline">
+			    <input class="form-control mr-sm-2" type="search" placeholder="Customer Email" name='email' aria-label="Search">
 			    <button class="btn form-control btn-info my-2 my-sm-0" type="submit">Search</button>
 			</form>
 		</div>
@@ -43,7 +43,9 @@
 	</div>
 	<div class="row">
 		<div class="col">
-			<button class="btn btn-info my-2 my-sm-0" type="submit">Resolve Balance</button>
+			<form method="get" action="/admin/resolve/customer/{{ @customerid }}">
+				<button class="btn btn-info my-2 my-sm-0" type="submit">Resolve Balance</button>
+			</form>
 		</div>
 	</div>	
 </div>

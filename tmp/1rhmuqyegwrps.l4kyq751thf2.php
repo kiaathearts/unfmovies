@@ -28,7 +28,12 @@
 		<?php endif; ?>
 		<?php foreach (($movies?:[]) as $movie): ?>
 			<div class="col col-lg-4 col-md-4 col-4">
-				<a href="/movies/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
+					<a href="/admin/title/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
+				<?php if ($admin): ?>
+				<?php endif; ?>
+				<?php if ($customer): ?>
+					<a href="/movies/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
+				<?php endif; ?>
 			</div>
 		<?php endforeach; ?>
 	</div>

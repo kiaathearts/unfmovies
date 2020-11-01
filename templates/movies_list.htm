@@ -28,7 +28,12 @@
 		</check>
 		<repeat group="{{ @movies }}" value="{{ @movie }}">
 			<div class="col col-lg-4 col-md-4 col-4">
-				<a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})</a>
+					<a href="/admin/title/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})</a>
+				<check if="{{ @admin }}">
+				</check>
+				<check if="{{ @customer }}">
+					<a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})</a>
+				</check>
 			</div>
 		</repeat>
 	</div>

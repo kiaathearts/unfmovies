@@ -50,49 +50,46 @@
 			        </button>
 			      </div>
 		      	<div class="modal-body">
+		      		<form method="post" action="/movies/cart/add/{{@movie['movie_id'] }}">
 		      		<div class="row">
 				         <div class="form-check-inline">
 						  <label class="form-check-label">
-						    <input type="radio" class="form-check-input" name="optbuytype">Rent
+						    <input type="radio" class="form-check-input" value="rental" name="buytype"checked>Rent
 						  </label>
 						</div>
 						<div class="form-check-inline">
 						  <label class="form-check-label">
-						    <input type="radio" class="form-check-input" name="optbuytype">Purchase
+						    <input type="radio" class="form-check-input" value="purchase" name="buytype">Purchase
 						  </label>
 						</div>
 		      		</div>
 		      		<div class="row">
 				         <div class="form-check-inline">
 						  <label class="form-check-label">
-						    <input type="radio" class="form-check-input" name="opt">VHS
+						    <input type="radio" class="form-check-input" value="vhs" name="format" checked>VHS
 						  </label>
 						</div>
 						<div class="form-check-inline">
 						  <label class="form-check-label">
-						    <input type="radio" class="form-check-input" name="opt">DVD
+						    <input type="radio" class="form-check-input" value="dvd" name="format">DVD
 						  </label>
 						</div>
 						<div class="form-check-inline">
 						  <label class="form-check-label">
-						    <input type="radio" class="form-check-input" name="opt">Blu-Ray
+						    <input type="radio" class="form-check-input" value="bluray" name="format">Blu-Ray
 						  </label>
 						</div>
 						<div class="form-check-inline">
 						  <label class="form-check-label">
-						    <input type="radio" class="form-check-input" name="opt">Digital
+						    <input type="radio" class="form-check-input" value="digital"name="format">Digital
 						  </label>
 						</div>
 		      		</div>
 				</div>
-				<p>You can add 1 more rental to your cart</p>
+				<p>{{ @cart_info }}</p>
 			      <div class="modal-footer">
 			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-<!-- 			        <form method="post" action="/movies/cart/add/purchase/{{ @movie_title }}">
-			        	<button type="submit" class="btn btn-primary">Add Purchase to Cart</button>
-			        </form> -->
-			        <form method="post" action="/movies/cart/add/rental/{{ @movie['movie_id'] }}">
-			        	<button type="submit" class="btn btn-primary">Add Rental to Cart</button>
+			        	<button type="submit" class="btn btn-primary">Add Item to Cart</button>
 			        </form>
 			      </div>
 			    </div>
