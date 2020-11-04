@@ -7,11 +7,15 @@
 	<!-- TODO: Perform for number of intervals -->
 	<div class="row">
 		<div class="col">
-			<!-- TODO: Calculate partial period, here -->
-			<h3><strong>Period of:</strong> 10-20-20</h3>
-			<h4>Rentals To-Date: $30,000,000</h4>
-			<h4>Purchases To-Date: $30,000,000</h4>
-			<h4><strong>Total: $60,000,000</strong></h4>
+			<repeat group="{{ @data }}" key="{{ @data_key }}" value="{{ @datum }}">
+			    <div>
+			        <p></p>
+					<h3><strong>Period of:</strong> {{ @data_key }} </h3>
+					<h4>Rentals To-Date: ${{ @datum['rentals']['rental_sum'] }}.00</h4>
+					<h4>Purchases To-Date: ${{ @datum['purchases']['purchase_sum'] }}.00</h4>
+					<h4><strong>Total: ${{ @datum['total'] }}.00</strong></h4>
+			    </div>
+			</repeat>
 		</div>
 	</div>
 </container>

@@ -41,6 +41,16 @@
 			<h4><strong>Balance: $<?= ($balance) ?></strong></h4>
 		</div>
 	</div>
+	<div>
+		<h4><strong>Eligible Purchase Returns</strong></h4>
+			<?php foreach (($purchases?:[]) as $purchase): ?>
+				<div class="row">
+					<div class="col">
+						<h4><a href="/admin/return_purchase/<?= ($purchase['bill_id']) ?>"><?= ($purchase['title']) ?> (<?= ($purchase['inventory_type']) ?>)</a></h4>
+					</div>
+				</div>
+			<?php endforeach; ?>
+	</div>
 	<div class="row">
 		<div class="col">
 			<form method="get" action="/admin/resolve/customer/<?= ($customerid) ?>">

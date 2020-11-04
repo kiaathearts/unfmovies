@@ -5,6 +5,9 @@
 //Allow all on apache2 000-default.conf
 //Create htaccess file from f3 
 //Enable ssl on php.ini - dev and prod and standard
+//!!! IMPORTANT !!!! SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','') Must be run to disable full group by 
+//Place into /etc/mysql/mysql.conf.d/mysqld.cnf, the lines:
+//sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" - https://stackoverflow.com/questions/23921117/disable-only-full-group-by
 
 //COMMIT: Add session start
 session_start();
@@ -38,11 +41,11 @@ $f3->set('customer', false);
 
 $f3->set('cart', new \Basket());
 
-//TODO: Change e-mail to email
-//TODO: Add security to login
+//TODO: Title report calculations need to be calculated to verify working
+//TODO: In cart values for rent need to be compared against the db and the pricing table
+//TODO: Changed e-mail to email
 $f3->route('POST /login', 
     function($f3){
-        $f3->set('admin_login', false);
         $username = $_POST['email'];
         $password = $_POST['password'];
         $email = "email@email.com";
@@ -56,10 +59,8 @@ $f3->route('POST /login',
             $_SESSION['username'] = $user['username'];
             $_SESSION['first_name'] = $user['first_name'];
             $_SESSION['last_name'] = $user['last_name'];
-            $_SESSION['admin'] = true;
-            $_SESSION['customer'] = false;
-            // $f3->set('admin', true);
-            // $f3->set('customer')
+            $_SESSION['admin'] = false;
+            $_SESSION['customer'] = true;
             $f3->reroute("/");
         }else{
             $_SESSION['logged_in'] = false;
@@ -68,7 +69,6 @@ $f3->route('POST /login',
     }
 );
 
-//TODO: Test admin login
 $f3->route('POST /admin/login', 
     function($f3){
         $f3->set('admin_login', true);
@@ -78,7 +78,9 @@ $f3->route('POST /admin/login',
         $user = $f3->get('db')->exec($user_query)[0];
         if( !empty($user) ){
             $_SESSION['logged_in'] = true;
-            $_SESSION['userid'] = $user['user_id'];
+            $_SESSION['admin'] = true;
+            $_SESSION['customer'] = false;
+            $_SESSION['employee_id'] = $user['employee_id'];
             $f3->reroute("/admin");
         }else{
             $_SESSION['logged_in'] = false;
@@ -101,14 +103,21 @@ $f3->route('GET /login',
     }
 );
 
-function verify_login(){
-    if($_SESSION['logged_in']==false){
+function verify_login($f3){
+    if(!$_SESSION['logged_in']){
         $f3->reroute('/login');
+    }
+}
+
+function verify_admin($f3){
+    if(!$_SESSION['admin']){
+        $f3->reroute("/login");
     }
 }
 
 $f3->route('GET /logout', 
     function($f3){
+        session_destroy();
         $_SESSION['logged_in'] = false;
         $f3->set('page_title', 'Login');
         echo \Template::instance()->render('templates/login.htm');
@@ -117,7 +126,7 @@ $f3->route('GET /logout',
 
 $f3->route('GET /',
     function($f3) {
-        verify_login();
+        verify_login($f3);
         update_cart($f3);
         $f3->reroute('/movies');
     }
@@ -135,8 +144,6 @@ function calculate_user_balance($f3, $userid){
         foreach($outstanding_rentals as $rental){
             $current_date = new DateTime("now");
             $due_date = new DateTime($rental['due_datetime']);
-            //TODO: On customer side verify invoice is updated with checkout total on checkout
-            //TODO: generate a purchase return page - list all purchases and dates and make the proper dates returnable
             if($current_date > $due_date){
                 $days = $due_date->diff($current_date)->format('%d');
                 $inventory_id = $rental['inventory_id'];
@@ -190,19 +197,20 @@ function calculate_user_balance($f3, $userid){
             }
         }
         $_SESSION['balance'] = $balance;
+
         return $outstanding_array;
         //TODO: Update invoice to reflect current balance
 }
 
 $f3->route('GET /movies',
     function($f3) {
-        verify_login();
+        verify_login($f3);
         update_cart($f3);
         calculate_user_balance($f3, $_SESSION['userid']);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
 
         //General page values
-        // $f3->set('customer', true);  
-        // $f3->set('admin', false);  
     	$f3->set('page_title', 'Movies');
 
         //Query genres here
@@ -218,28 +226,34 @@ $f3->route('GET /movies',
     }
 );
 
-//TODO: Add safety to password creation
-//TODO: Add update success notification
 $f3->route('POST /profile/@userid/update', 
     function($f3){
-        verify_login();
+        verify_login($f3);
         update_cart($f3);
-        
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $_SESSION['password_success'] = false;
+
         $password = $_POST['password'];
         $userid = $f3->get('PARAMS.userid');
         $update_stmt = "UPDATE user SET password='".$password."' WHERE user_id=".$userid;
-        $f3->get('db')->exec($update_stmt);
+        if($f3->get('db')->exec($update_stmt)>0){
+            $_SESSION['password_success'] = true;
+        }
+        $_SESSION['show_pass_message'] = true;
         $route = "/profile/".$f3->get('PARAMS.userid');
 
         $f3->reroute($route);
     }
 );
 
+
 $f3->route('POST /movies/query', 
     function($f3){
-        verify_login();
+        verify_login($f3);
         update_cart($f3);
-        // $f3->set('customer', true);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
 
         //TODO: Changed column names in actor table to be compatible with multiple join on movies
         //Make certain there are movies to query
@@ -289,9 +303,9 @@ $f3->route('POST /movies/query',
             }
 
             ////Check if movie has genre
-            if( $_POST['genre_id']!="" ){
+            if( $_POST['movie_genre']!="genre" ){
                 $goal++;
-                if($movie['genre_id'] == $_POST['genre_id']){
+                if($movie['genre_id'] == $_POST['movie_genre']){
                     $count++;
                 }
             }
@@ -337,11 +351,16 @@ function update_cart($f3){
 
 $f3->route('GET /movies/@movieid',
     function($f3) {
-        verify_login();
+        verify_login($f3);
         update_cart($f3);
-    	$f3->set('page_title', 'Movies');   
-        // $f3->set('customer', true);
+    	$f3->set('page_title', 'Movies');
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);   
         $movieid = $f3->get('PARAMS.movieid');
+        $userid = $_SESSION['userid'];
+
+        $f3->set('userid', $_SESSION['userid']);
+        $f3->set('movieid', $movieid);
 
     	//retrieve movie from database by id here
         $movie_query = "SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id WHERE movie_id=".$movieid." ";
@@ -351,12 +370,13 @@ $f3->route('GET /movies/@movieid',
         $f3->set('formats_display_string', 'VHS, DVD, Blu-Ray, Digital');
         $f3->set('formats', array('VHS', 'DVD', 'Blu-Ray', 'Digital'));
     
-        //Reviews    	
-    	$reviews = array(
-    		array('username'=>'jeff','movieid'=>$f3->get('PARAMS.movieid'), 'review'=>"I like this movie" ), 
-    		array('username' =>'noonie', 'movieid'=>$f3->get('PARAMS.movieid'), 'review'=>"I don't like this movie"),
-    		array('username' =>'oren', 'movieid'=>$f3->get('PARAMS.movieid'), 'review'=>"I don't like this movie")
-    	);
+        //Reviews  
+        $get_reviews = "SELECT * FROM review 
+        JOIN user ON review.review_user_id=user.user_id 
+        WHERE review.review_movie_id=".$movieid." 
+        AND user.user_id=".$userid;
+        $reviews = $f3->get('db')->exec($get_reviews);
+
         $f3->set('reviews', $reviews); 
 
     	$f3->set('content', 'templates/movie_detail.htm'); 
@@ -366,13 +386,21 @@ $f3->route('GET /movies/@movieid',
 
 $f3->route('GET /profile/@userid', 
     function($f3){
-        verify_login();
+        verify_login($f3);
         update_cart($f3);
-        //TODO: Notify password successful
-        $f3->set('password_succes', $_SESSION['password_succes']);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $userid = $f3->get('PARAMS.userid');
+        
+        if(strpos($f3->get('SERVER.HTTP_REFERER'), "profile/".$userid) &&
+            $_SESSION['show_pass_message']
+        ){
+            $f3->set('show_pass_message', true);
+        }else{
+            $f3->set('show_pass_message', false);
+        }
 
         $f3->set('page_title', 'Profile');
-        // $f3->set('customer', true);
 
         //Query user by id and get all related information
         $f3->set('username', ucfirst($_SESSION['username']));
@@ -381,7 +409,6 @@ $f3->route('GET /profile/@userid',
         $f3->set('balance', $_SESSION['balance']);
 
         //Calculate preferred genre here
-        //WHERE user_id='".$_SESSION['userid']."'
         $rental_history_query = "SELECT COUNT(g.genre_name), g.genre_name FROM transaction  
         JOIN rental ON transaction.transaction_id=rental.transaction_id 
         JOIN inventory ON inventory.inventory_id=rental.inventory_id 
@@ -453,11 +480,30 @@ $f3->route('GET /profile/@userid',
     }
 );
 
+$f3->route('POST /movie/@userid/review/@movieid', 
+    function($f3){
+        $userid = $f3->get('PARAMS.userid');
+        $movieid = $f3->get('PARAMS.movieid');
+        $review = $_POST['review'];
+        $rating = $_POST['rating'];
+
+        $date = new DateTime();
+        $date = $date->format('Y-m-d');
+
+        $update_review = "INSERT INTO review (review_user_id, review_movie_id, review_stars, review_text, review_date) VALUES(".$userid.", ".$movieid.", ".$rating.", '".$review."', '".$date."')";
+        $f3->get('db')->exec($update_review);
+
+        $f3->reroute("/movies/".$movieid);
+    }
+);
+
 $f3->route('GET /admin', 
     function($f3){
-        verify_login();
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
 
-        $f3->set('admin', true);
         $f3->set('content', 'templates/admin_home.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -465,7 +511,11 @@ $f3->route('GET /admin',
 
 $f3->route('GET /admin/@movieid/edit', 
     function($f3){
-        verify_login();
+        verify_login($f3);
+        verify_admin($f3);
+
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
         
         $f3->set('page_title', 'Edit Movie');
         $f3->set('admin', true);
@@ -515,8 +565,10 @@ $f3->route('GET /admin/@movieid/edit',
 
 $f3->route('POST /admin/@movieid/edit', 
     function($f3){
-        verify_login();
-        $f3->set('admin', true);
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Title Search'); 
         $f3->set('content', 'templates/title_search.htm'); 
         $movieid = $f3->get('PARAMS.movieid');
@@ -617,9 +669,10 @@ $f3->route('POST /admin/@movieid/edit',
 
 $f3->route('GET /admin/title',
     function($f3) {
-        verify_login();
-        update_cart($f3);
-        // calculate_user_balance($f3. $_SESSION['userid']);
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
 
         //General page values
         $f3->set('page_title', 'Title Search');
@@ -628,10 +681,10 @@ $f3->route('GET /admin/title',
         $f3->set('genres',$f3->get('db')->exec('SELECT * FROM genre'));
 
         //Initialize movies
-        $movies_query ='SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id';
+        $movies_query ='SELECT * FROM movie 
+        JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id';
         $f3->set('movies', $f3->get('db')->exec($movies_query));
 
-        //TODO: Add admin qui differentiation for movie search
         //Display the page
         $f3->set('content', 'templates/movies_list.htm');  
         echo \Template::instance()->render('templates/master.htm');
@@ -640,9 +693,11 @@ $f3->route('GET /admin/title',
 
 $f3->route('GET /admin/title/@movieid',
     function($f3) {
-        verify_login();
-
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+
         $f3->set('page_title', 'Title Search'); 
         $f3->set('content', 'templates/title_search.htm'); 
 
@@ -684,73 +739,458 @@ $f3->route('GET /admin/title/@movieid',
     }
 );
 
-// $f3->route('POST /admin/title',
-//     function($f3) {
-//         verify_login();
-
-//         $f3->set('admin', true);
-//         $f3->set('page_title', 'View Title'); 
-//         $f3->set('content', 'templates/title_search.htm'); 
-
-
-//         //Get inventory information
-//         $f3->set('vhs', array(
-//             'rental' => '4',
-//             'purchase' => '29',
-//             'inventory' => '80'
-//         ));
-//         $f3->set('dvd', array(
-//             'rental' => '4',
-//             'purchase' => '29',
-//             'inventory' => '30'
-//         ));
-//         $f3->set('bluray', array(
-//             'rental' => '4',
-//             'purchase' => '50',
-//             'inventory' => '20'
-//         ));
-
-//         $f3->set('movieid', 1);
-//         echo \Template::instance()->render('templates/master.htm');
-//     }
-// );
-
 $f3->route('GET /admin/reports/title', 
     function($f3){
-        verify_login();
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
 
-        $f3->set('admin', true);
         $f3->set('content', 'templates/reports_title.htm');
 
         echo \Template::instance()->render('templates/master.htm');
     }
 );
 
-$f3->route('GET /admin/reports/genre', 
+$f3->route('GET /admin/reports/title/@movieid', 
     function($f3){
-        verify_login();
+        verify_login($f3);
+        verify_admin($f3);
 
-        $f3->set('admin', true);
-        $f3->set('content', 'templates/reports_genre.htm');
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
 
-        //Query genres here
-        $f3->set('genres', array('Horror', 'Action', 'Suspense', 'Romance', 'Sci-Fi', 'Drama'));
+        //Gather all rental invoices for the movie
+        $rental_invoices = [];
+        $movie_rental_query = "SELECT * FROM movie 
+        JOIN inventory ON movie.movie_id=inventory.movie_id 
+        JOIN rental ON rental.inventory_id=inventory.inventory_id 
+        JOIN bill ON bill.transaction_id=rental.transaction_id 
+        JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
+        $movie_rental_instances = $f3->get('db')->exec($movie_rental_query);
+        $f3->set('movie_title', $movie_rental_instances[0]['title']);
+
+        $total_rentals = 0;
+        $total_rental_fees = 0;
+        foreach($movie_rental_instances as $result){
+            $total_rentals += $result['payment_amount'];
+            $total_fees += $result['fees'];
+        }
+
+        $f3->set('total_rentals', $total_rentals);
+        $f3->set('total_rental_fees', $total_rental_fees);
+
+        //Gather all purchase information for movie
+        $purchase_invoices = [];
+        $movie_purchase_query = "SELECT * FROM movie 
+        INNER JOIN inventory ON movie.movie_id=inventory.movie_id 
+        INNER JOIN purchase ON purchase.inventory_id=purchase.inventory_id 
+        INNER JOIN bill ON bill.transaction_id=purchase.transaction_id 
+        INNER JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
+
+        $movie_purchase_instances = $f3->get('db')->exec($movie_purchase_query);
+        
+        $total_purchases = 0;
+        $movies_purchased = [];
+        foreach($movie_purchase_instances as $movie){
+            $total_purchases += $result['payment_amount'];
+        }
+
+        $f3->set('total_purchases', $total_purchases);
+
+        $totals_rental_purchase = $total_purchases + $total_rentals + $total_rental_fees;
+        $f3->set('totals_rental_purchase', $totals_rental_purchase);
+        $f3->set('content', 'templates/reports_title.htm');
 
         echo \Template::instance()->render('templates/master.htm');
     }
 );
 
-$f3->route('GET /admin/reports/@genreid/@interval', 
+$f3->route('POST /admin/reports/title/query', 
     function($f3){
-        if($_SESSION['logged_in']==false){
-            $f3->reroute('/login');
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $f3->set('report_search', true);
+
+        //TODO: Changed column names in actor table to be compatible with multiple join on movies
+        //Make certain there are movies to query
+        if(!$f3->exists('movies')){
+            $movies_query ="SELECT * 
+                FROM movie
+                JOIN genre 
+                    ON movie.genre_id=genre.genre_id 
+                JOIN director 
+                    ON movie.director_id = director.director_id
+                JOIN movie_actor
+                    ON movie_actor.movie_movie_id = movie.movie_id
+                JOIN actor
+                    ON actor.actor_id = movie_actor.actor_actor_id";
+            $f3->set('movies', $f3->get('db')->exec($movies_query));
         }
 
-        $f3->set('admin', true);
+        //Filter movies
+        $filtered_movies = array_filter($f3->get('movies'), function($movie){
+            $count = 0;
+            $goal = 0;
+
+            ////Check if movie has title
+            if( $_POST['movie_title']!="" ){
+                $goal++;
+                if( strpos( trim(strtolower($movie['title'])), trim(strtolower($_POST['movie_title'])) ) > -1 ){
+                    $count ++;
+                }
+            }
+
+            //Check if movie has director
+            if( $_POST['movie_director']!="" ){
+                $goal++;
+                $director_name = $movie['first_name']." ".$movie['last_name'];
+                if( strpos( trim(strtolower( $director_name )), trim(strtolower($_POST['movie_director'])) ) > -1 ){
+                    $count ++;
+                }
+            }
+
+            //Check if movie has actor
+            if( $_POST['movie_actor']!="" ){
+                $goal++;
+                $actor_name = $movie['actor_first_name']." ".$movie['actor_last_name'];
+                if( strpos( trim(strtolower( $actor_name )), trim(strtolower($_POST['movie_actor'])) ) > -1 ){
+                    $count ++;
+                }
+            }
+
+            ////Check if movie has genre
+            if( $_POST['genre_id']!="" ){
+                $goal++;
+                if($movie['genre_id'] == $_POST['genre_id']){
+                    $count++;
+                }
+            }
+
+            return $count == $goal;
+        });
+
+        //Query genres here
+        $f3->set('genres',$f3->get('db')->exec('SELECT * FROM genre'));
+
+        //Set movies in view
+        $f3->set('movies', $filtered_movies);
+
+        //Display content
+        $f3->set('content', 'templates/reports_title.htm');  
+        echo \Template::instance()->render('templates/master.htm');
+
+    }
+);
+
+
+$f3->route('GET /admin/reports/genre', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+
+        $f3->set('content', 'templates/reports_genre.htm');
+
+        $f3->set('today', Date('Y-m-d'));
+
+        //Query genres here
+        $f3->set('genres',$f3->get('db')->exec('SELECT * FROM genre'));
+
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+function divide_by_week($rentals, $purchases, $start_date, $end_date){
+    $interval = new DateInterval('P1W');
+    $dateRange = new DatePeriod($start_date, $interval, $end_date);
+
+    $weeks = array();
+    foreach ($dateRange as $date) { 
+        $weeks[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
+            $value_date = $value['rental_datetime'];
+            //TODO: Calculate returned purchases
+            
+            $value_date = new DateTime($value_date);
+            $date_limit = new DateTime($date->format('Y-m-d'));
+            $date_limit = $date_limit->add(new DateInterval('P7D'));
+
+            return $value_date>$date && $value_date<$date_limit;
+        });
+    }
+    foreach($weeks as $week_date=>$values){
+        $weeks[$week_date]['purchases'] = array_filter($purchases, function($value) use($week_date){
+            $value_date = $value['purchase_datetime'];
+            //TODO: Calculate returned purchases
+            $value_date = new DateTime($value_date);
+            $date_limit = new DateTime($week_date);
+            $date_limit = $date_limit->add(new DateInterval('P7D'));
+
+            $above = $value_date> new DateTime($week_date);
+            $below =  $value_date<$date_limit;
+            return $value_date>$date && $value_date<$date_limit;           
+        });
+    }
+    // print_r($weeks);
+    foreach($weeks as $week_key=>$value){
+        $weekly_rental_total = 0;
+        foreach($value['rentals'] as $rental){
+            $weekly_rental_total += $rental['payment_amount'];
+        }
+
+        $weekly_purchase_total = 0;
+        foreach($value['purchases'] as $purchase){
+            $weekly_purchase_total += $purchase['payment_amount'];
+        }
+
+        $weeks[$week_key] = [];
+        $weeks[$week_key]['rentals']['rental_sum'] = $weekly_rental_total;
+        $weeks[$week_key]['purchases']['purchase_sum'] = $weekly_purchase_total;
+        $weeks[$week_key]['total'] = $weekly_rental_total + $weekly_purchase_total;
+    }
+    
+    return $weeks;
+}
+
+function divide_by_month($rentals, $purchases, $start_date, $end_date){
+    $interval = new DateInterval('P1M');
+    $month = $start_date->format('m');
+    $year = $start_date->format('Y');
+    $start_date = new DateTime($year."-".$month."-01");
+    $dateRange = new DatePeriod($start_date, $interval, $end_date);
+
+    $months = array();
+    foreach ($dateRange as $date) { 
+        $months[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
+            $value_date = $value['rental_datetime'];
+            //TODO: Calculate returned purchases
+            
+            $value_date = new DateTime($value_date);
+            $date_limit = new DateTime($date->format('Y-m-d'));
+            $date_limit = $date_limit->add(new DateInterval('P1M'));
+
+            return $value_date>$date && $value_date<$date_limit;
+        });
+    }
+    foreach($months as $month_date=>$values){
+        $months[$month_date]['purchases'] = array_filter($purchases, function($value) use($month_date){
+            $value_date = $value['purchase_datetime'];
+            //TODO: Calculate returned purchases
+            $value_date = new DateTime($value_date);
+            $date_limit = new DateTime($month_date);
+            $date_limit = $date_limit->add(new DateInterval('P1M'));
+
+            $above = $value_date> new DateTime($month_date);
+            $below =  $value_date<$date_limit;
+            return $value_date>$date && $value_date<$date_limit;           
+        });
+    }
+
+    foreach($months as $month_key=>$value){
+        $monthly_rental_total = 0;
+        foreach($value['rentals'] as $rental){
+            $monthly_rental_total += $rental['payment_amount'];
+        }
+
+        $monthly_purchase_total = 0;
+        foreach($value['purchases'] as $purchase){
+            $monthly_purchase_total += $purchase['payment_amount'];
+        }
+
+        $months[$month_key] = [];
+        $months[$month_key]['rentals']['rental_sum'] = $monthly_rental_total;
+        $months[$month_key]['purchases']['purchase_sum'] = $monthly_purchase_total;
+        $months[$month_key]['total'] = $monthly_rental_total + $monthly_purchase_total;
+    }
+
+    return $months;
+}
+
+function divide_by_year($rentals, $purchases, $start_date, $end_date){
+    $interval = new DateInterval('P1Y');
+    $year = $start_date->format('Y');
+    $start_date = new DateTime($year."-01-01");
+    $dateRange = new DatePeriod($start_date, $interval, $end_date);
+
+    // print_r($start_date);
+    $years = array();
+    foreach ($dateRange as $date) { 
+        $years[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
+            $value_date = $value['rental_datetime'];
+            //TODO: Calculate returned purchases
+            
+            $value_date = new DateTime($value_date);
+            $date_limit = new DateTime($date->format('Y-m-d'));
+            $date_limit = $date_limit->add(new DateInterval('P1Y'));
+
+            return $value_date>$date && $value_date<$date_limit;
+        });
+    }
+    foreach($years as $year_date=>$values){
+        $years[$year_date]['purchases'] = array_filter($purchases, function($value) use($year_date){
+            $value_date = $value['purchase_datetime'];
+            //TODO: Calculate returned purchases
+            $value_date = new DateTime($value_date);
+            $date_limit = new DateTime($year_date);
+            $date_limit = $date_limit->add(new DateInterval('P1Y'));
+
+            $above = $value_date> new DateTime($year_date);
+            $below =  $value_date<$date_limit;
+            return $value_date>$date && $value_date<$date_limit;           
+        });
+    }
+    foreach($years as $year_key=>$value){
+        $yearly_rental_total = 0;
+        foreach($value['rentals'] as $rental){
+            $yearly_rental_total += $rental['payment_amount'];
+        }
+
+        $yearly_purchase_total = 0;
+        foreach($value['purchases'] as $purchase){
+            $yearly_purchase_total += $purchase['payment_amount'];
+        }
+
+        $years[$year_key] = [];
+        $years[$year_key]['rentals']['rental_sum'] = $yearly_rental_total;
+        $years[$year_key]['purchases']['purchase_sum'] = $yearly_purchase_total;
+        $years[$year_key]['total'] = $yearly_rental_total + $yearly_purchase_total;
+    }
+    // print_r($years);
+    return $years;
+}
+
+$f3->route('POST /admin/reports/genre', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        
+        $interval = $_POST['opttimetype'];
+        $genreid = $_POST['movie_genre'];
+        $from_date = $_POST['from_date'];
+        $to_date = $_POST['to_date'];
+
+
+        //Gather all rental invoices for the genre
+        $rental_invoices = [];
+        $movie_rental_query = "SELECT * FROM movie 
+        JOIN inventory ON movie.movie_id=inventory.movie_id 
+        JOIN rental ON rental.inventory_id=inventory.inventory_id 
+        JOIN bill ON bill.transaction_id=rental.transaction_id 
+        JOIN invoice ON invoice.invoice_id=bill.invoice_id
+        WHERE movie.genre_id=".$genreid;
+
+        if(trim($from_date) != ""){
+            $compare = new DateTime($from_date);
+            $compare = $compare->format('Y-m-d H:i:s');
+            $movie_rental_query .=" AND rental.rental_datetime>'".$compare."'";
+        }
+
+        if(trim($to_date) != ""){
+            $compare = new DateTime($to_date);
+            $compare = $compare->format('Y-m-d H:i:s');
+            $movie_rental_query .=" AND rental.rental_datetime<'".$compare."'";
+        }
+
+        $movie_rental_instances = $f3->get('db')->exec($movie_rental_query);
+        $f3->set('movie_title', $movie_rental_instances[0]['title']);
+
+        $total_rentals = 0;
+        $total_rental_fees = 0;
+        if(!empty($movie_rental_instances)){
+            foreach($movie_rental_instances as $movie){
+                if(!in_array($movie['invoice_id'], $rental_invoices))
+                    array_push($rental_invoices, $movie['invoice_id']);
+            }
+            $rental_invoices = implode(",", $rental_invoices);
+            $rental_invoices_query = "SELECT * FROM invoice WHERE invoice_id IN(".$rental_invoices.")";
+            $rental_invoices_result = $f3->get('db')->exec($rental_invoices_query);
+            foreach($rental_invoices_result as $result){
+                $total_rentals += $result['checkout_total'];
+                $total_fees += $result['fees'];
+            }
+        }
+
+
+        $f3->set('total_rentals', $total_rentals);
+        $f3->set('total_rental_fees', $total_rental_fees);
+
+        //Gather all purchase information for genre
+        $purchase_invoices = [];
+        $movie_purchase_query = "SELECT * FROM movie 
+        JOIN inventory ON movie.movie_id=inventory.movie_id 
+        JOIN purchase ON purchase.inventory_id=purchase.inventory_id 
+        JOIN bill ON bill.transaction_id=purchase.transaction_id 
+        JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        WHERE movie.genre_id=".$genreid;
+
+        if(trim($from_date) != ""){
+            $compare = new DateTime($from_date);
+            $compare = $compare->format('Y-m-d H:i:s');
+            $movie_purchase_query .=" AND purchase.purchase_datetime>'".$compare."'";
+        }
+
+        if(trim($to_date) != ""){
+            $compare = new DateTime($to_date);
+            $compare = $compare->format('Y-m-d H:i:s');
+            $movie_purchase_query .=" AND purchase.purchase_datetime<'".$compare."'";
+        }
+
+        $movie_purchase_instances = $f3->get('db')->exec($movie_purchase_query);
+        
+        $total_purchases = 0;
+        if(!empty($movie_purchase_instances)){
+            foreach($movie_purchase_instances as $movie){
+                if(!in_array($movie['invoice_id'], $purchase_invoices))
+                    array_push($purchase_invoices, $movie['invoice_id']);
+            }
+
+            $purchase_invoices = implode(",", $purchase_invoices);
+            $purchase_invoices_query = "SELECT * FROM invoice WHERE invoice_id IN(".$purchase_invoices.")";
+
+            $purchase_invoices_result = $f3->get('db')->exec($purchase_invoices_query);
+            foreach($purchase_invoices_result as $result){
+                $total_purchases += $result['checkout_total'];
+            }
+        }
+
+        switch($interval){
+            case 'weekly':
+                $weekly_values = divide_by_week($movie_rental_instances, $movie_purchase_instances, new DateTime($from_date), new DateTime($to_date));
+                $f3->set('data', $weekly_values);
+                $f3->set('interval', 'Week');
+            break;
+            case 'monthly':
+                $monthly_values = divide_by_month($movie_rental_instances, $movie_purchase_instances, new DateTime($from_date), new DateTime($to_date));
+                $f3->set('data', $monthly_values);
+                $f3->set('interval', 'Month');
+            break;
+            case 'yearly':
+                $yearly_values = divide_by_year($movie_rental_instances, $movie_purchase_instances, new DateTime($from_date), new DateTime($to_date));
+                $f3->set('data', $yearly_values);
+                $f3->set('interval', 'Year');
+            break;
+        }
+
+        $f3->set('total_purchases', $total_purchases);
+
+        $totals_rental_purchase = $total_purchases + $total_rentals + $total_rental_fees;
+        $f3->set('totals_rental_purchase', $totals_rental_purchase);
+
+
+        $f3->set('admin', $_SESSION['admin']);
         $f3->set('content', 'templates/report_genre.htm');
 
-        $f3->set('genre', 'Horror');
-        $f3->set('interval', 'Week');
+        $genre = $f3->get('db')->exec("SELECT genre_name FROM genre WHERE genre_id=".$genreid)[0]['genre_name'];
+        $f3->set('genre', $genre);
 
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -759,7 +1199,7 @@ $f3->route('GET /admin/reports/@genreid/@interval',
 
 $f3->route('GET /admin/customer', 
     function($f3){
-        verify_login();
+        verify_login($f3);
 
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('content', 'templates/customer.htm');
@@ -769,7 +1209,11 @@ $f3->route('GET /admin/customer',
 
 $f3->route('POST /admin/customer', 
     function($f3){
-        verify_login();
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+
         $customer_email = $_POST['email'];
 
         $customer_query = "SELECT * FROM user WHERE email='".$customer_email."'";
@@ -788,6 +1232,21 @@ $f3->route('POST /admin/customer',
             }
         }
 
+        $date = new DateTime();
+        $date = $date->format('Y-m-d');
+
+        $query_eligible_purchases = "SELECT * FROM bill 
+        JOIN transaction ON bill.transaction_id=transaction.transaction_id
+        JOIN purchase ON purchase.transaction_id=transaction.transaction_id
+        JOIN inventory ON inventory.inventory_id=purchase.inventory_id 
+        JOIN movie ON movie.movie_id=inventory.movie_id
+        WHERE bill.user_id=".$customerid." AND return_end >'".$date."' 
+        AND return_datetime IS NULL";
+
+
+        $purchases = $f3->get('db')->exec($query_eligible_purchases);
+        $f3->set('purchases', $purchases);
+
         $f3->set('balance', $balance);
         $f3->set('outstandings', $outstandings); 
 
@@ -797,7 +1256,11 @@ $f3->route('POST /admin/customer',
 
 $f3->route('GET /admin/resolve/customer/@customerid', 
     function($f3){
-        verify_login();
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+
         $customerid = $f3->get('PARAMS.customerid');
         $current_date = Date('Y-m-d H:i:s');
 
@@ -879,20 +1342,125 @@ $f3->route('GET /admin/resolve/customer/@customerid',
             $f3->get('db')->exec($update_invoice_exec);
         }
 
+        calculate_user_balance($f3, $customerid);
         $f3->reroute("/admin/customer/");
+    }
+);
+
+$f3->route('GET /admin/return_purchase/@billid', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+
+        $billid = $f3->get('PARAMS.billid');
+
+        $date = new DateTime();
+        $date = $date->format('Y-m-d');
+
+        $query_return = "SELECT * FROM bill 
+        INNER JOIN transaction ON bill.transaction_id=transaction.transaction_id
+        INNER JOIN purchase ON purchase.transaction_id=transaction.transaction_id
+        INNER JOIN inventory ON inventory.inventory_id=purchase.inventory_id 
+        INNER JOIN movie ON movie.movie_id=inventory.movie_id
+        INNER JOIN invoice ON bill.invoice_id=invoice.invoice_id
+        WHERE bill.bill_id=".$billid;
+
+        $purchase = $f3->get('db')->exec($query_return)[0];
+
+        $transactionid = $purchase['transaction_id'];
+        $invoiceid = $purchase['invoice_id'];
+        $userid = $purchase['user_id'];
+        $get_email = "SELECT email FROM user WHERE user_id=".$userid;
+        $email = $f3->get('db')->exec($get_email);
+
+        //Update inventory to reflect movie back in stock
+        $get_inventory_count = "SELECT inventory_count FROM inventory WHERE inventory.inventory_id=".$purchase['inventory_id'];
+        $inventory_count = $f3->get('db')->exec($get_inventory_count)[0]['inventory_count'];
+        $inventory_count++;
+        $update_inventory = "UPDATE inventory SET inventory_count=".$inventory_count." 
+        WHERE inventory_id=".$purchase['inventory_id'];
+        $inv_updated = $f3->get('db')->exec($update_inventory);
+
+        //Update purchase table to reflect return date
+        $update_purchase = "UPDATE purchase SET return_datetime='".$date."' 
+        WHERE purchase.transaction_id=".$transactionid;
+        $f3->get('db')->exec($update_purchase);
+
+        //Update invoice minus purchase price
+        $updated_total = $purchase['checkout_total'] - $purchase['payment_amount'];
+        $update_invoice = "UPDATE invoice SET checkout_total=".$updated_total.".00 WHERE invoice_id=".$invoiceid;
+        $updated_invoice = $f3->get('db')->exec($update_invoice);
+
+        //Create a new bill with same transaction id
+        $generate_bill = "INSERT INTO bill(transaction_id, user_id, employee_id, payment_date, payment_amount, invoice_id) VALUES(".$transactionid.", ".$userid.", 1, '".$date."', -".$purchase['payment_amount'].", ".$invoiceid.")";
+        $generated = $f3->get('db')->exec($generate_bill);
+
+
+
+        $f3->reroute('/admin/customer');
+        
     }
 );
 
 $f3->route('GET /admin/@adminid/pricing', 
     function($f3){
-        verify_login();
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
 
-        $f3->set('admin', true);
         $f3->set('content', 'templates/pricing.htm');
 
-        $f3->set('new_release_price', '4');
-        $f3->set('standard_price', '3.50');
+        $get_prices = "SELECT * FROM pricing";
+        $prices = $f3->get('db')->exec($get_prices);
 
+        $costs = [];
+        foreach($prices as $price){
+            $cost[$price['name']] = $price['price'];
+        }
+        $f3->set('new_release_price', $cost['new_release']);
+        $f3->set('standard_price', $cost['standard']);
+
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+$f3->route('POST /admin/@adminid/pricing', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+
+        $standard = $_POST['standard'];
+        $new_release = $_POST['new_release'];
+
+        $set_standard_price = "UPDATE pricing SET price=".$standard." WHERE name='standard'";
+        $set_new_release_price = "UPDATE pricing SET price=".$new_release." WHERE name='new_release'";
+
+        //Update everything
+        if(trim($standard)!= ""){
+            $prices_set = $f3->get('db')->exec($set_standard_price);
+
+        }
+        if(trim($new_release)!=""){
+            $prices_set = $f3->get('db')->exec($set_new_release_price);
+        }
+
+        $get_prices = "SELECT * FROM pricing";
+        $prices = $f3->get('db')->exec($get_prices);
+
+        $costs = [];
+        foreach($prices as $price){
+            $cost[$price['name']] = $price['price'];
+        }
+
+        $f3->set('new_release_price', $cost['new_release']);
+        $f3->set('standard_price', $cost['standard']);
+
+        $f3->set('content', 'templates/pricing.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
 );
@@ -940,12 +1508,7 @@ $f3->route('GET /checkout',
          * 
          * If new release, charge new release amount, otherwise, charge other amount
          */
-        $invoice_balance = $f3->get('db')->exec("SELECT balance FROM invoice "
-                . "WHERE user_id=".$_SESSION['userid'])[0]['balance'];
-        if($invoice_balance){
-            //TODO: Add balance notify to checkout
-            //TODO: Notify user that user has balance
-        }else{
+        if($_SESSION['balance'] == 0){
             /*
              * Generate an invoice to have an id to attach to bills
              * After all transactions are recorded update invoice to take totals
@@ -1020,6 +1583,10 @@ $f3->route('GET /checkout',
 
 $f3->route('POST /movies/cart/add/@movieid',
     function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+
         $movieid = $f3->get('PARAMS.movieid');
         $purchase_type = $_POST['buytype'];
         $format = $_POST['format'];
@@ -1047,10 +1614,20 @@ $f3->route('POST /movies/cart/add/@movieid',
         $movie = $f3->get('db')->exec($movie_query)[0];
         
         //TODO: notify cart is heavily determinate on movie naming
+        $get_prices = "SELECT * FROM pricing";
+        $prices = $f3->get('db')->exec($get_prices);
+
+        $type_costs = [];
+        foreach($prices as $price){
+            $type_costs[$price['name']] = $price['price'];
+        }
+
+        $f3->set('new_release_price', $cost['new_release']);
+        $f3->set('standard_price', $cost['standard']);
         $cost_type = strtolower($format)."_".strtolower($purchase_type);
         $cost = $movie[$cost_type];
         if(strtolower($purchase_type) == 'rental'){
-            $cost = is_new_release($release_date) ? 4 : 3.50;
+            $cost = is_new_release($release_date) ? $type_costs['standard'] : $type_costs['new_release'];
         } 
         
         $f3->get('cart')->set('movieid', $movieid);

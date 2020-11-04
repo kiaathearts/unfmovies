@@ -15,7 +15,7 @@
       <a class="nav-link" href="/admin/customer">Customer</a>      
       <a class="nav-link" href="/admin/reports/title">Reports by Title</a>      
       <a class="nav-link" href="/admin/reports/genre">Reports by Genre</a>      
-      <a class="nav-link" href="/admin/<?= ($userid) ?>/pricing">Pricing</a>      
+      <a class="nav-link" href="/admin/<?= ($SESSION['employee_id']) ?>/pricing">Pricing</a>      
     <?php endif; ?>
   </div>
     <?php if ($customer): ?>
@@ -29,12 +29,14 @@
       				<i class="fa fa-shopping-cart" aria-hidden="true"></i> <span class="badge badge-pill badge-danger"><?= ($cart->count())."
 " ?>
               </span>
+              <?php if ($SESSION['balance'] > 0): ?>
+                <p>You have a balance of <?= ($balance) ?>, that must be paid before you can make any more purchases or checkout rentals. Please, visit your profile and resolve your balance.</p>
+              <?php endif; ?>
       			</div>
       			<div class="col-lg-5 col-sm-5 col-5 total-section text-right">
       				<p>Total: <span class="text-info">$<?= ($cart_total_cost) ?></span></p>
       			</div>
       	 </div>
-    	<!--------------------- TODO: Add real functionality here------------------->
         <?php foreach (($cart->find()?:[]) as $cart_item): ?>
           <div class="row cart-detail">
             <div class="col-lg-8 col-sm-8 col-8 cart-detail-product">
@@ -52,7 +54,6 @@
           <div class="row">
             <div class="col-lg-12 col-sm-12 col-12 text-center checkout">
               <span class="align-text-bottom"><a class="cart-btn btn-primary btn-block" href="/checkout">Checkout</a></span>
-              <!-- <button class="cart-btn btn-primary btn-block">Checkout</button> -->
             </div>
           </div>
           <div class="row total-header-section">

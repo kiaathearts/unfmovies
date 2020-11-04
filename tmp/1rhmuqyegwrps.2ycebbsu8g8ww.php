@@ -14,14 +14,23 @@
         <div class="card mx-auto text-light login">
 	  <h5 class="card-header bg-info">Welcome to UNFMovies!</h5>
 	  <div class="card-body">
-	    <form method="post" action="/login">
-	    	<?php if ($admin_login==true): ?>
-				<a href="/login">Customer Login</a>
-	    		<input type="text" class="form-control p-1 m-1" placeholder="username" name="username">
-	    	<?php endif; ?>
-	    	<?php if ($admin_login==false): ?>
-				<a href="/admin/login">Admin Login</a>
-	    		<input type="email" class="form-control p-1 m-1" placeholder="youremail@email.com" name="email">
+	  	<?php if ($admin_login): ?>
+	  		
+	  			<form method="post" action="/admin/login">
+	  		
+	  		<?php else: ?>
+	    		<form method="post" action="/login">
+	  		
+	  	<?php endif; ?>
+	    	<?php if ($admin_login): ?>
+	    		
+					<a href="/login">Customer Login</a>
+		    		<input type="text" class="form-control p-1 m-1" placeholder="username" name="username">
+	    		
+	    		<?php else: ?>
+					<a href="/admin/login">Admin Login</a>
+		    		<input type="email" class="form-control p-1 m-1" placeholder="youremail@email.com" name="email">
+	    		
 	    	<?php endif; ?>
 	    	<input type="password" class="form-control p-1 m-1" placeholder="password" name="password">
 	    	<button type="submit" class="btn btn-info btn-lg btn-block">Login</button>

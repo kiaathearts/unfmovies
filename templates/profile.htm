@@ -11,7 +11,8 @@
 			<button class="btn btn-info btn-sm mb-2">Return Rentals</button> 
 		</div>
 	</div>
-		<div class="row mb-3">
+	<div class="row mb-3">
+		<div><p>{{ @referer }}</p></div>
 		<div class="col offset-md-1">
 			<form method="post" action="/profile/{{ @SESSION['userid'] }}/update" class="form-inline">
 				<input type="password" name="password" class="form-control" placeholder="Change Password"/>
@@ -19,12 +20,16 @@
 					<button type="submit" class="btn btn-info">Change</button>
 				</div>
 			</form>
+				<check if="{{ @SESSION['show_pass_message']  }}">
+					<true>
+						<div>
+							<p style="color:blue">Password change successful</p>
+						</div>
+					</true>
+				</check>
 		</div>
 	</div>
 	<div class="row mb-3">
-	<check if="{{ @password_success == true  }}">
-		<p>Password change successful</p>
-	</check>
 		<div class="col offset-md-1">
 			<h3>Because you liked {{ @preferred_genre }} may we suggest <a href="/movies/{{ @movieid }}">{{ @suggested_movie }}</a></h3>
 		</div>

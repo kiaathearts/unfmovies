@@ -6,23 +6,50 @@
 	</div>
 	<div class="row mb-3">
 		<div class="col">
-			<form class="form-inline">
-			    <input class="form-control mr-sm-2" type="search" placeholder="Search Title" aria-label="Search">
-			    <button class="btn form-control btn-info my-2 my-sm-0" type="submit">Search</button>
+			<form method="post" action="/admin/reports/title/query" class="inline">
+				<div class="input-group mb-3">
+					<input type="text" name="movie_title" class="form-control" placeholder="Movie Title"/>
+					<input type="text" name="movie_director" class="form-control" placeholder="Director"/>
+					<input type="text" name="movie_actor" class="form-control" placeholder="Actor"/>
+					<select name="movie_genre" class="form-control custom-select">
+						<option selected>Genre</option>
+						<?php foreach (($genres?:[]) as $genre): ?>
+					  		<option value="<?= ($genre['genre_id']) ?>"><?= ($genre['genre_name']) ?></option>
+						<?php endforeach; ?>
+					</select>
+					<div class="input-group-append">
+						<button type="submit" class="btn btn-primary">Search</button>
+					</div>
+				</div>
 			</form>
+			<?php foreach (($movies?:[]) as $movie): ?>
+				<div class="col col-lg-4 col-md-4 col-4">
+					<a href="/admin/reports/title/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
+				<?php if ($admin): ?>
+				<?php endif; ?>
+				<?php if ($customer): ?>
+					<a href="/movies/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
+				<?php endif; ?>
+			</div>
+		<?php endforeach; ?>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col">
-			<p class="h3 mb-3">No data searched</p>
+			<?php if ($movie_title): ?>
+				<p class="h3 mb-3"><?= ($movie_title) ?></p>
+				<?php else: ?><p class="h3 mb-3">No data searched</p>
+			<?php endif; ?>
+			
 		</div>
 	</div>
 	<div class="row">
 		<div class="col">
 			<p class="h3">Total Sales</p>
-			<p class="h4">Rentals to Date: </p>
-			<p class="h4">Purchased to Date: </p>
-			<p class="h4">Total: </p>
+			<p class="h4">Rentals to Date: <?= ($total_rentals) ?></p>
+			<p class="h4">Rental Fees to Date: <?= ($total_rental_fees) ?></p>
+			<p class="h4">Purchased to Date: <?= ($total_purchases) ?></p>
+			<p class="h4">Total: <?= ($totals_rental_purchase) ?></p>
 		</div>
 	</div>
 </div>
