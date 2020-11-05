@@ -1,7 +1,11 @@
 /.metadata/
-/nbproject/private/
+/nbproject/**
 /tmp/**
 /vendor/**
 /classes/**
 /bootstrap-3.3.7/**
 composer.json
+connector.php
+/phpmyadmin
+info.php
+errors.log
