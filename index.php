@@ -1599,7 +1599,7 @@ $f3->route('GET /checkout',
                     ." WHERE invoice_id=".$invoice_id;
             $f3->get('db')->exec($update_invoice);
         }
-        $redirect = "/profile/".$SESSION['userid'];
+        $redirect = "/profile/".$_SESSION['userid'];
         $f3->reroute($redirect);
     }
 );
