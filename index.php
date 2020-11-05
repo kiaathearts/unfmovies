@@ -12,24 +12,14 @@
 //COMMIT: Add session start
 session_start();
 
-// require('connector.php');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
- // if($_SERVER['REMOTE_ADDR']!='::1'){
- //    require 'vendor/autoload.php';
- // } else {
-    require '/home/kia/vendor/autoload.php';
-// }  
 
+require('connector.php');
 $f3 = \Base::instance();
 $f3->set('DEBUG', 3);
 
-$db=new DB\SQL(
-    'mysql:host=localhost;port=3306;dbname=UNFMovies',
-    'root',
-    'Ng110281'
-);
 
 $f3->set('db', $db);
 $f3->set('head', 'templates/head.htm');
