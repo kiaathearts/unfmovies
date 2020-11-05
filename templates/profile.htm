@@ -8,11 +8,10 @@
 	<div class="row">
 		<div class="col offset-md-4">
 			<h3 style="display:inline">Total ${{ @balance }} </h3>
-			<button class="btn btn-info btn-sm mb-2">Return Rentals</button> 
+			<a href="/profile/return/{{ @SESSION['userid'] }}" class="btn btn-info btn-sm mb-2">Return Rentals</a> 
 		</div>
 	</div>
 	<div class="row mb-3">
-		<div><p>{{ @referer }}</p></div>
 		<div class="col offset-md-1">
 			<form method="post" action="/profile/{{ @SESSION['userid'] }}/update" class="form-inline">
 				<input type="password" name="password" class="form-control" placeholder="Change Password"/>

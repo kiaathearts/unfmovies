@@ -61,6 +61,7 @@ $f3->route('POST /login',
             $_SESSION['last_name'] = $user['last_name'];
             $_SESSION['admin'] = false;
             $_SESSION['customer'] = true;
+            $_SESSION['max_rentals_reached'] = false;
             $f3->reroute("/");
         }else{
             $_SESSION['logged_in'] = false;
@@ -223,6 +224,36 @@ $f3->route('GET /movies',
         //Display the page
     	$f3->set('content', 'templates/movies_list.htm');  
 		echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+$f3->route('GET /profile/return/@userid', 
+    function($f3){
+        //Rentals already in user's possession
+        $query_rentals_outstanding = "SELECT * FROM transaction 
+            JOIN rental ON transaction.transaction_id=rental.transaction_id 
+            JOIN inventory ON rental.inventory_id=inventory.inventory_id
+            WHERE transaction.user_id=".$_SESSION['userid']." AND rental.current_status=0 
+            GROUP BY transaction.transaction_id";
+
+        $date = new DateTime();
+        $date = $date->format('Y-m-d');
+        //Rentals in cart
+        $rentals_outstanding = $f3->get('db')->exec($query_rentals_outstanding);
+        foreach($rentals_outstanding as $rental){
+            //Rental update
+            $update_rental = "UPDATE rental SET current_status=1, return_datetime='".$date."' WHERE transaction_id=".$rental['transaction_id'];
+            $f3->get('db')->exec($update_rental);
+
+            //Inventory upate
+            $get_inventory_count = "SELECT inventory_count FROM inventory WHERE inventory_id=".$rental['inventory_id'];
+            $inventory_count = $f3->get('db')->exec($get_inventory_count)[0]['inventory_count'];
+            $inventory_count++;
+            $update_inventory = "UPDATE inventory SET inventory_count=".$inventory_count." WHERE inventory_id=".$rental['inventory_id'];
+            $f3->get('db')->exec($update_inventory);
+        }
+        $_SESSION['max_rentals_reached'] = false;
+        $f3->reroute("/profile/".$_SESSION['userid']);        
     }
 );
 
@@ -1578,14 +1609,13 @@ $f3->route('GET /checkout',
                     ." WHERE invoice_id=".$invoice_id;
             $f3->get('db')->exec($update_invoice);
         }
+        $f3->reroute("/profile/".$SESSION['userid']);
     }
 );
 
 $f3->route('POST /movies/cart/add/@movieid',
     function($f3){
         verify_login($f3);
-        $f3->set('customer', $_SESSION['customer']);
-        $f3->set('admin', $_SESSION['admin']);
 
         $movieid = $f3->get('PARAMS.movieid');
         $purchase_type = $_POST['buytype'];
@@ -1604,6 +1634,7 @@ $f3->route('POST /movies/cart/add/@movieid',
             $cart_rentals = count($f3->get('cart')->find('purchase_type', 'Rental'));
             if(($cart_rentals + $rentals_outstanding) >= 2){
                 //TODO: Add two rental max notification
+                $_SESSION['max_rentals_reached'] = true;
                 $f3->reroute("/movies/".$movieid);
             }
         }

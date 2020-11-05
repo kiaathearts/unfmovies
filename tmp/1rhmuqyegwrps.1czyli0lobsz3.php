@@ -5,7 +5,6 @@
   </button>
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <!-- <button type="button" class="btn">Sign Out</button> -->
     <a class="btn btn-primary" href="/logout" role="button">Sign Out</a>
     <?php if ($customer): ?>
     	<a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">My Profile</a>
@@ -68,3 +67,11 @@
       </div>
     <?php endif; ?>
 </nav>
+
+  <div>
+    <?php if (@$_SESSION['max_rentals_reached']): ?>
+      
+        <a href="/profile/<?= ($SESSION['userid']) ?>"> You have reached a maximum of two rentals, either return any rentals you have checked out or remove a rental from your cart</a>
+      
+    <?php endif; ?>
+  </div>

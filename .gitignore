@@ -1,2 +1,7 @@
 /.metadata/
 /nbproject/private/
+/tmp/**
+/vendor/**
+/classes/**
+/bootstrap-3.3.7/**
+composer.json
