@@ -118,7 +118,9 @@ $f3->route('GET /logout',
 $f3->route('GET /',
     function($f3) {
         verify_login($f3);
-        update_cart($f3);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
         $f3->reroute('/movies');
     }
 );
@@ -196,9 +198,11 @@ function calculate_user_balance($f3, $userid){
 $f3->route('GET /movies',
     function($f3) {
         verify_login($f3);
-        update_cart($f3);
-        calculate_user_balance($f3, $_SESSION['userid']);
         $f3->set('customer', $_SESSION['customer']);
+        if($_SESSION['customer']){
+            calculate_user_balance($f3, $_SESSION['userid']);
+            update_cart($f3);
+        }
         $f3->set('admin', $_SESSION['admin']);
 
         //General page values
@@ -272,8 +276,10 @@ $f3->route('POST /profile/@userid/update',
 $f3->route('POST /movies/query', 
     function($f3){
         verify_login($f3);
-        update_cart($f3);
         $f3->set('customer', $_SESSION['customer']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
         $f3->set('admin', $_SESSION['admin']);
 
         //TODO: Changed column names in actor table to be compatible with multiple join on movies
@@ -349,7 +355,7 @@ $f3->route('POST /movies/query',
 
 function update_cart($f3){
     //Calculate cart rental count
-    $get_rentals="SELECT COUNT(*) FROM transaction JOIN rental ON transaction.transaction_id=rental.transaction_id WHERE transaction.user_id=".$_SESSION['userid']." AND rental.current_status=false";
+    $get_rentals="SELECT COUNT(*) FROM transaction JOIN rental ON transaction.transaction_id=rental.transaction_id WHERE transaction.user_id=".$_SESSION['userid']." AND rental.current_status=0";
     $number_rentals_outstanding = $f3->get('db')->exec($get_rentals)[0]['COUNT(*)'];
     $total_rentals = $number_rentals_outstanding + $rentals_in_cart;
     $f3->set('rental_count', $total_rentals);
@@ -373,7 +379,9 @@ function update_cart($f3){
 $f3->route('GET /movies/@movieid',
     function($f3) {
         verify_login($f3);
-        update_cart($f3);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
     	$f3->set('page_title', 'Movies');
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);   
