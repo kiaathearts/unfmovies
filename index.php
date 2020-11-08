@@ -155,16 +155,6 @@ $f3->route('GET /review/@customerid',
     }
 );
 
-$f3->route('GET /invoices/@customerid', 
-    function($f3){
-        // $get_invoices = "SELECT * FROM bill 
-        // JOIN invoice ON invoice.invoice_id=bill.invoice_id 
-        // JOIN transaction ON bill.transaction_id=transaction.transaction_id 
-        // JOIN "
-    }
-);
-
-
 function calculate_user_balance($f3, $userid){
         $balance_query = "SELECT * FROM transaction JOIN rental ON "
         . "transaction.transaction_id=rental.transaction_id WHERE "
@@ -1024,7 +1014,7 @@ function divide_by_week($rentals, $purchases, $start_date, $end_date){
             return $value_date>$date && $value_date<$date_limit;           
         });
     }
-    // print_r($weeks);
+    
     foreach($weeks as $week_key=>$value){
         $weekly_rental_total = 0;
         foreach($value['rentals'] as $rental){
@@ -1806,6 +1796,67 @@ $f3->route('GET /confirm/checkout/@invoiceid',
         $f3->set('purchases', $invoice_purchases);
         $f3->set('total', $invoice_total);
         $f3->set('content', 'templates/checkout_confirmation.htm');
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+$f3->route('GET /invoices/@userid', 
+    function($f3){
+
+        $userid = $f3->get('PARAMS.userid');
+        $get_invoices = "SELECT invoice.invoice_id, bill.payment_date, invoice.checkout_total FROM invoice 
+        JOIN bill ON bill.invoice_id=invoice.invoice_id 
+        WHERE bill.user_id=".$userid." 
+        GROUP BY invoice.invoice_id";
+
+        $invoices = $f3->get('db')->exec($get_invoices);
+        $f3->set('invoices', $invoices);
+
+        $f3->set('content', 'templates/invoice_list.htm');
+        echo \Template::instance()->render('templates/master.htm');        
+    }
+);
+
+$f3->route('GET /invoice/@invoiceid', 
+    function($f3){
+        $invoiceid = $f3->get('PARAMS.invoiceid');
+
+        $invoice_total = 0;
+        //Get rentals checked out
+        $get_invoice_rentals = "SELECT * FROM invoice 
+        JOIN bill ON bill.invoice_id=invoice.invoice_id 
+        JOIN transaction ON bill.transaction_id=transaction.transaction_id 
+        JOIN rental ON rental.transaction_id=transaction.transaction_id 
+        JOIN inventory ON rental.inventory_id=inventory.inventory_id 
+        JOIN movie ON movie.movie_id=inventory.movie_id 
+        WHERE invoice.invoice_id=".$invoiceid;
+        $invoice_rentals = $f3->get('db')->exec($get_invoice_rentals);
+        foreach($invoice_rentals as $key=>$rental){
+            $date = new DateTime($rental['return_datetime']);
+            $date = $date->format('Y-m-d');
+            $invoice_rentals[$key]['return'] = $date;
+            $amount = $rental['payment_amount'];
+            $invoice_total += $amount;
+        }
+
+        //Get movies purchased
+        $get_invoice_purchases = "SELECT * FROM invoice 
+        JOIN bill ON bill.invoice_id=invoice.invoice_id 
+        JOIN transaction ON bill.transaction_id=transaction.transaction_id 
+        JOIN purchase ON purchase.transaction_id=transaction.transaction_id 
+        JOIN inventory ON purchase.inventory_id=inventory.inventory_id 
+        JOIN movie ON movie.movie_id=inventory.movie_id 
+        WHERE invoice.invoice_id=".$invoiceid;
+
+        $invoice_purchases = $f3->get('db')->exec($get_invoice_purchases);
+        foreach($invoice_purchases as $key=>$purchase){
+            $invoice_total += $purchase['payment_amount'];
+        }
+        
+        $f3->set('rentals', $invoice_rentals);
+        $f3->set('purchases', $invoice_purchases);
+        $f3->set('total', $invoice_total);
+        $f3->set('content', 'templates/invoice_detail.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
 );

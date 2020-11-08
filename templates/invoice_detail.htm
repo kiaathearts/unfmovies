@@ -1,0 +1,26 @@
+
+<div class="container">
+	<div class="row">
+		<div class="col offset-md-1">
+			<p class="display-4">Invoice </p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col offset-md-1">
+			<p class="h3">Rentals</p>
+			<repeat group="{{ @rentals }}" value="{{ @rental }}">
+				<p>{{ @rental['title'] }} ({{ @rental['inventory_type'] }}) | Returned On {{ @rental['return'] }} ${{ @rental['payment_amount'] }}.00 </p>
+			</repeat>
+			<p class="h3">Purchases</p>
+			<repeat group="{{ @purchases }}" value="{{ @purchase }}">
+				<p>{{ @purchase['title'] }}</p>
+			</repeat>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col offset-md-1">
+			<p class="h3">Total: ${{ @total }}.00</p>
+		</div>
+	</div>
+</div>
+

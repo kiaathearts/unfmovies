@@ -21,8 +21,8 @@
 			    <?= (trim($actor)) ?> |
 			<?php endforeach; ?>
 			<h5 style="margin-bottom:0"><strong>Synopsis: </strong></h5>
-				<?= (trim($movie['description']))."
-" ?>
+				<p><?= (trim($movie['description'])) ?> - <strong><?= ($movie['genre_name']) ?></strong></p>
+
 		</div>
 	</div>
 	<div class="row mb-5">
