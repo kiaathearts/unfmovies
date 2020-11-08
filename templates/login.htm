@@ -24,17 +24,25 @@
 	  	</check>
 	    	<check if="{{ @admin_login }}">
 	    		<true>
-					<a href="/login">Customer Login</a>
+					<p class="text-dark">Admin Login</p>
 		    		<input type="text" class="form-control p-1 m-1" placeholder="username" name="username">
 	    		</true>
 	    		<false>
-					<a href="/admin/login">Admin Login</a>
+					<p class="text-dark">Customer Login</p>
 		    		<input type="email" class="form-control p-1 m-1" placeholder="youremail@email.com" name="email">
 	    		</false>
 	    	</check>
 	    	<input type="password" class="form-control p-1 m-1" placeholder="password" name="password">
 	    	<button type="submit" class="btn btn-info btn-lg btn-block">Login</button>
-	    	<p class="text-secondary">Don't have an account? <a href="">Sign Up</a></p>
+	    	<check if="{{ @admin_login }}">
+	    		<true>
+	    			<a href="/login"> Go to customer login</a>
+	    		</true>
+	    		<false>
+	    			<a href="/admin/login">Go to admin login</a>
+	    		</false>
+	    	</check>
+
 	    </form>
 	</div>
 	</div>

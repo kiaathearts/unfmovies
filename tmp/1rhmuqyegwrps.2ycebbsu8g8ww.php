@@ -24,17 +24,25 @@
 	  	<?php endif; ?>
 	    	<?php if ($admin_login): ?>
 	    		
-					<a href="/login">Customer Login</a>
+					<p class="text-dark">Admin Login</p>
 		    		<input type="text" class="form-control p-1 m-1" placeholder="username" name="username">
 	    		
 	    		<?php else: ?>
-					<a href="/admin/login">Admin Login</a>
+					<p class="text-dark">Customer Login</p>
 		    		<input type="email" class="form-control p-1 m-1" placeholder="youremail@email.com" name="email">
 	    		
 	    	<?php endif; ?>
 	    	<input type="password" class="form-control p-1 m-1" placeholder="password" name="password">
 	    	<button type="submit" class="btn btn-info btn-lg btn-block">Login</button>
-	    	<p class="text-secondary">Don't have an account? <a href="">Sign Up</a></p>
+	    	<?php if ($admin_login): ?>
+	    		
+	    			<a href="/login"> Go to customer login</a>
+	    		
+	    		<?php else: ?>
+	    			<a href="/admin/login">Go to admin login</a>
+	    		
+	    	<?php endif; ?>
+
 	    </form>
 	</div>
 	</div>

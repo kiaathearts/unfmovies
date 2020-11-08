@@ -118,10 +118,35 @@ $f3->route('GET /logout',
 $f3->route('GET /',
     function($f3) {
         verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
         if($_SESSION['customer']){
             update_cart($f3);
         }
-        $f3->reroute('/movies');
+        $get_user = "SELECT * FROM user WHERE user_id=".$_SESSION['userid'];
+        $user = $f3->get('db')->exec($get_user)[0];
+        $f3->set('username', $user['first_name']);
+        $f3->set('customerid', $user['user_id']);
+
+        $f3->set('content', 'templates/customer_home.htm');
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+$f3->route('GET /review/@customerid', 
+    function($f3){
+        $customerid = $f3->get('PARAMS.customerid');
+        $get_customer_movie_history = "SELECT DISTINCT movie.title, movie.movie_id FROM movie 
+        LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
+        JOIN rental ON rental.inventory_id=inventory.inventory_id 
+        JOIN bill ON bill.transaction_id=rental.transaction_id  
+        WHERE bill.user_id=".$customerid;
+
+        $movies  = $f3->get('db')->exec($get_customer_movie_history);
+        $f3->set('movies', $movies);
+
+        $f3->set('content', 'templates/review_list.htm');
+        echo \Template::instance()->render('templates/master.htm');
     }
 );
 
@@ -184,7 +209,7 @@ function calculate_user_balance($f3, $userid){
                     }
                 }else{
                     if($days==2){
-                        //TODO: Set digital availability to unavailable
+                        //TODO: Set digital availability to unavailable - Do in profile/orders page
                     }
                 }
             }
@@ -213,7 +238,16 @@ $f3->route('GET /movies',
 
         //Initialize movies
         $movies_query ='SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id';
-        $f3->set('movies', $f3->get('db')->exec($movies_query));
+        $movies = $f3->get('db')->exec($movies_query);
+        $f3->set('movies', $movies);
+
+        // print_r($f3->get('movies'));
+        foreach($movies as $key=>$movie){
+            $release_date = $movie['release_date'];
+            $date = new DateTime();
+            $date = $date->format('Y-m-d');
+            // if()
+        }
 
         //Display the page
     	$f3->set('content', 'templates/movies_list.htm');  
@@ -1283,6 +1317,99 @@ $f3->route('POST /admin/customer',
     }
 );
 
+$f3->route('GET /resolve/@customerid', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+
+        $customerid = $f3->get('PARAMS.customerid');
+        $current_date = Date('Y-m-d H:i:s');
+
+        $customer_query = "SELECT * FROM user WHERE user_id='".$customerid."'";
+        $customer = $f3->get('db')->exec($customer_query);
+        $outstandings = calculate_user_balance($f3, $customerid);
+
+        foreach($outstandings as $outstanding){
+            $inventory_id = $outstanding['inventory_id'];
+
+            //Create transaction for return 
+            $new_transaction = "INSERT INTO transaction (user_id, transaction_type) VALUES(".$customerid.", 'rental')";
+            $result = $f3->get('db')->exec($new_transaction);
+            
+            //Get transaction id for transaction subtype table
+            $latest_transaction_id_query = "SELECT transaction_id FROM transaction WHERE transaction_id = (SELECT MAX(transaction_id) FROM transaction) LIMIT 1";
+            $transaction_id = $f3->get('db')->exec(array($new_transaction, $latest_transaction_id_query))[0]['transaction_id'];
+
+            //Generate rental return transaction
+            $new_rental_transaction ="INSERT INTO rental (transaction_id,"
+                                . "inventory_id, due_datetime, current_status) VALUES(".$transaction_id.", ".$inventory_id.", '".$current_date."', 1)";
+            $f3->get('db')->exec($new_rental_transaction);
+        }
+
+        //Get outstanding rentals
+        $balance_query = "SELECT * FROM transaction 
+        JOIN rental ON "
+        . "transaction.transaction_id=rental.transaction_id 
+        JOIN inventory ON 
+        inventory.inventory_id=rental.inventory_id
+        JOIN movie ON
+        inventory.movie_id=movie.movie_id
+        WHERE "
+        . "transaction.user_id=".$customerid." "
+        . "AND rental.current_status=0";
+        $outstanding_rentals = $f3->get('db')->exec($balance_query);
+        $invoices = [];
+
+        //Update inventory and bill and collect invoices and total invoice fees
+        foreach($outstanding_rentals as $rental){
+            $fees = $outstandings[$rental['title']]['fees'];
+            $current_date = new DateTime("now");
+            $due_date = new DateTime($rental['due_datetime']);
+            
+            //Only resolve late fees
+            if($current_date > $due_date){
+                //Update all late items to returned
+                $post_rentals_query = "UPDATE rental SET current_status=1 
+                WHERE transaction_id=".$rental['transaction_id'];
+                $f3->get('db')->exec($post_rentals_query);
+
+                //If less than rental period plus 15 days update inventory
+                $interval = $current_date->diff($due_date);
+                if($interval->format('%a')<15){
+                    $get_inventory_count = "SELECT inventory_count FROM inventory WHERE inventory_id=".$inventory_id;
+                    $inventory_count = $f3->get('db')->exec($get_inventory_count)[0]['inventory_count'];
+                    $inventory_count++;
+                    $update_inventory = "UPDATE inventory SET inventory_count=".$inventory_count." WHERE inventory_id=".$inventory_id;
+                    $f3->get('db')->exec($update_inventory);
+                }                
+
+                //Add fees to invoice for invoice total update
+                $get_invoice_query = "SELECT invoice_id FROM bill WHERE transaction_id=".$rental['transaction_id'];
+                $invoice_id = $f3->get('db')->exec($get_invoice_query)[0]['invoice_id'];
+                $invoices[$invoice_id]['fees'] += $fees;
+
+                //Update bill for each update
+                $return_date = Date('Y-m-d H:i:s');
+                $transaction_id = $rental['transaction_id'];
+                $update_bill_query = "INSERT INTO bill(employee_id, user_id, transaction_id, payment_date, payment_amount, invoice_id) VALUES(1, ".$customerid.", ".$transaction_id.", '".$return_date."', ".$fees.", ".$invoice_id.")";
+                $f3->get('db')->exec($update_bill_query);
+            }
+        }
+
+        //Update invoices with fee totals
+        foreach($invoices as $invoice_id=>$fees){
+            $update_invoice_exec = "UPDATE invoice SET balance=0, fees=".$fees['fees'];
+            $update_invoice_exec .= " WHERE invoice_id=".$invoice_id;
+            $f3->get('db')->exec($update_invoice_exec);
+        }
+
+        calculate_user_balance($f3, $customerid);
+        $f3->reroute("/admin/customer/");
+    }
+);
+
 $f3->route('GET /admin/resolve/customer/@customerid', 
     function($f3){
         verify_login($f3);
@@ -1609,6 +1736,19 @@ $f3->route('GET /checkout',
         }
         $redirect = "/profile/".$_SESSION['userid'];
         $f3->reroute($redirect);
+    }
+);
+
+$f3->route('GET /checkout/@customerid', 
+    function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $f3->set('cart', $f3->get('cart')); 
+
+        
+        $f3->set('content', 'templates/checkout.htm');
+        echo \Template::instance()->render('templates/master.htm');
     }
 );
 

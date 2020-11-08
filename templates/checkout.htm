@@ -1,0 +1,50 @@
+<div class="container">
+  <div class="row total-header-section">
+  	<div class="col-lg-5 col-sm-5 col-5">
+  		<i class="fa fa-shopping-cart" aria-hidden="true"></i> <span class="badge badge-pill badge-danger">{{ @cart->count() }}
+      </span>
+      <check if="{{ @SESSION['balance'] > 0 }}">
+        <true><p>You have a balance of {{ @balance }}, that must be paid before you can make any more purchases or checkout rentals. Please, visit your profile and resolve your balance.</p></true>
+      </check>
+  	</div>
+  	<div class="col-lg-5 col-sm-5 col-5 total-section text-right">
+  		<p>Total: <span class="text-info">${{ @cart_total_cost }}</span></p>
+  	</div>
+  </div>
+  <repeat group="{{ @cart->find() }}" value="{{ @cart_item }}">
+    <div class="row cart-detail">
+      <div class="col-lg-5 col-sm-5 col-5 cart-detail-product">
+        <a href="/movies/{{ @cart_item->movieid }}"><p>{{ @cart_item->movie_title }}</p></a>
+        <span class="price text-info"> ${{ @cart_item->amount }}</span> <span class="count"> {{ @cart_item->purchase_type }}</span>
+      </div>
+      <div class="col-lg-1 col-sm-1 col-1">
+        <a type="button" href="/movies/cart/remove/{{ @cart_item->movieid }}" class="btn btn-link">
+         <i class="fa fa-trash" aria-hidden="true"></i>
+        </a>
+      </div>
+    </div>
+  </repeat>
+  <check if="{{ @cart->count() > 0}}">
+    <div class="row">
+      <div class="col-lg-5 col-sm-5 col-5 text-center checkout">
+        <span class="align-text-bottom"><a class="cart-btn btn-primary btn-block" href="/checkout">Checkout</a></span>
+      </div>
+    </div>
+    <div class="row total-header-section">
+        <a href="/movies/cart/empty" class="cart-btn">Empty Cart</a>
+    </div>
+  </check>
+  <check if="{{ @cart->count() == 0}}">
+      <div class="col-lg-5 col-sm-5 col-5 cart-detail-product">
+        <h5>You don't have anything in your cart, yet!</h5>
+      </div>
+  </check>
+
+  <div>
+    <check if="{{ @$_SESSION['max_rentals_reached'] }}">
+      <true>
+        <a href="/profile/{{ @SESSION['userid'] }}"> You have reached a maximum of two rentals, either return any rentals you have checked out or remove a rental from your cart</a>
+      </true>
+    </check>
+  </div>
+</div>

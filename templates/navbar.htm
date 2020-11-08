@@ -1,5 +1,12 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand text-primary" href="/">UNFMovies</a>
+  <check if="{{ @admin }} ">
+    <true>
+      <a class="navbar-brand text-primary" href="/admin">UNFMovies</a>
+    </true>
+    <false>
+      <a class="navbar-brand text-primary" href="/">UNFMovies</a>
+    </false>
+  </check>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
