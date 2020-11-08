@@ -6,10 +6,19 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col offset-md-4">
-			<h3 style="display:inline">Balance Total $<?= ($balance) ?> </h3>
+		<div class="col offset-md-1">
+			<h3 style="display:inline">Total Fees (Balance)  $<?= ($balance) ?> </h3>
 			<a href="/profile/resolve/<?= ($SESSION['userid']) ?>" class="btn btn-info btn-sm mb-2">Pay Balance</a> 
-			<a href="/profile/return/<?= ($SESSION['userid']) ?>" class="btn btn-info btn-sm mb-2">Return Rentals</a> 
+		</div>
+	</div>
+	<div class="row">
+		<div class="col offset-md-1">
+			<p class="h3">Current Rental(s)
+				<a href="/profile/return/<?= ($SESSION['userid']) ?>" class="btn btn-info btn-sm mb-2">Return Rentals</a>
+			</p>
+			<?php foreach (($checked_out?:[]) as $rental): ?>
+				<p><?= ($rental['title']) ?></p>
+			<?php endforeach; ?> 
 		</div>
 	</div>
 	<div class="row mb-3">

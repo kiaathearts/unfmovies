@@ -37,12 +37,25 @@
 			<div class="col col-lg-4 col-md-4 col-4">
 				<check if="{{ @admin }}">
 					<true>
-						<a href="/admin/title/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})</a>
+						<a href="/admin/title/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})
+
+							<check if="{{ @movie['new_release'] }}==1">
+								<true>
+									 - New!
+								</true>
+							</check>
+						</a>
 					</true>
 				</check>
 				<check if="{{ @customer }}">
 					<true>
-						<a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})</a>
+						<a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})
+							<check if="{{ @movie['new_release'] }}==1">
+								<true>
+									 - New!
+								</true>
+							</check>
+						</a>
 					</true>
 				</check>
 			</div>

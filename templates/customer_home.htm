@@ -1,4 +1,4 @@
-<div class="container">
+3<div class="container">
 	<div class="row mb-2">
 		<div class="col offset-md-1">
 			<p class="display-3">Welcome {{ @username }}</p>
@@ -21,6 +21,11 @@
 	</div>
 	<div class="row">
 		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/profile/{{ @customerid }}">Check balance/Pay fees</a></div>
+		<div class="col cols-1"></div>
+		<div class="col cols-1"></div>
+	</div>
+		<div class="row">
+		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/invoices/{{ @customerid }}">View Invoices</a></div>
 		<div class="col cols-1"></div>
 		<div class="col cols-1"></div>
 	</div>

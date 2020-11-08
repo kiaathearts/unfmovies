@@ -136,17 +136,31 @@ $f3->route('GET /',
 $f3->route('GET /review/@customerid', 
     function($f3){
         $customerid = $f3->get('PARAMS.customerid');
-        $get_customer_movie_history = "SELECT DISTINCT movie.title, movie.movie_id FROM movie 
+        $get_customer_rental_history = "SELECT DISTINCT movie.title, movie.movie_id FROM movie 
         LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
         JOIN rental ON rental.inventory_id=inventory.inventory_id 
         JOIN bill ON bill.transaction_id=rental.transaction_id  
         WHERE bill.user_id=".$customerid;
 
+        $get_customer_movie_history = "SELECT DISTINCT movie.title, movie.movie_id FROM movie 
+        LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
+        JOIN purchase ON rental.inventory_id=inventory.inventory_id 
+        JOIN bill ON bill.transaction_id=rental.transaction_id  
+        WHERE bill.user_id=".$customerid;
         $movies  = $f3->get('db')->exec($get_customer_movie_history);
         $f3->set('movies', $movies);
 
         $f3->set('content', 'templates/review_list.htm');
         echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+$f3->route('GET /invoices/@customerid', 
+    function($f3){
+        // $get_invoices = "SELECT * FROM bill 
+        // JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        // JOIN transaction ON bill.transaction_id=transaction.transaction_id 
+        // JOIN "
     }
 );
 
@@ -239,15 +253,15 @@ $f3->route('GET /movies',
         //Initialize movies
         $movies_query ='SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id';
         $movies = $f3->get('db')->exec($movies_query);
-        $f3->set('movies', $movies);
 
         // print_r($f3->get('movies'));
         foreach($movies as $key=>$movie){
             $release_date = $movie['release_date'];
-            $date = new DateTime();
-            $date = $date->format('Y-m-d');
-            // if()
+            $movies[$key]['new_release'] = is_new_release($release_date);
         }
+
+        // print_r($movies[0]['new_release']);
+        $f3->set('movies', $movies);
 
         //Display the page
     	$f3->set('content', 'templates/movies_list.htm');  
@@ -537,7 +551,17 @@ $f3->route('GET /profile/@userid',
             ];
 
         },$f3->get('db')->exec($user_reviews_query));
-        $f3->set('reviews', $user_reviews); 
+        $f3->set('reviews', $user_reviews);
+
+        //Rentals checked out
+        $balance_query = "SELECT * FROM transaction 
+        JOIN rental ON transaction.transaction_id=rental.transaction_id 
+        JOIN inventory ON inventory.inventory_id=rental.inventory_id 
+        JOIN movie ON movie.movie_id=inventory.movie_id 
+        WHERE transaction.user_id=".$userid." AND rental.current_status=0";
+        $rentals_checkedout = $f3->get('db')->exec($balance_query);
+        $f3->set('checked_out', $rentals_checkedout);
+        // print_r($rentals_checkedout);
         $f3->set('content', 'templates/profile.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -1647,6 +1671,7 @@ function is_new_release($release_date){
 
 $f3->route('GET /checkout', 
     function($f3){
+        $invoice_id = '';
         //TODO: Updated inventory type to take 6 characters
         //TODO: Added inventory of all three formats for each movie
         //TODO: Set digital rental/purchase to available - Not performed
@@ -1734,8 +1759,38 @@ $f3->route('GET /checkout',
                     ." WHERE invoice_id=".$invoice_id;
             $f3->get('db')->exec($update_invoice);
         }
-        $redirect = "/profile/".$_SESSION['userid'];
+
+        $redirect = "/confirm/checkout/".$invoice_id;
+
         $f3->reroute($redirect);
+    }
+);
+
+$f3->route('GET /confirm/checkout/@invoiceid', 
+    function($f3){
+        $invoiceid = $f3->get('PARAMS.invoiceid');
+        //Get rentals checked out
+        $get_invoice_rentals = "SELECT * FROM invoice 
+        JOIN bill ON bill.invoice_id=invoice.invoice_id 
+        JOIN transaction ON bill.transaction_id=transaction.transaction_id 
+        JOIN rental ON rental.transaction_id=transaction.transaction_id 
+        WHERE invoice.invoice_id=".$invoiceid;
+        $invoice_rentals = $f3->get('db')->exec($get_invoice_rentals);
+
+        //Get movies purchased
+        $get_invoice_purchases = "SELECT * FROM invoice 
+        JOIN bill ON bill.invoice_id=invoice.invoice_id 
+        JOIN transaction ON bill.transaction_id=transaction.transaction_id 
+        JOIN purchase ON purchase.transaction_id=transaction.transaction_id 
+        WHERE invoice.invoice_id=".$invoiceid;
+
+        $invoice_purchases = $f3->get('db')->exec($get_invoice_purchases);
+        
+        $f3->set('rentals', $invoice_rentals);
+        $f3->set('purchases', $invoice_purchases);
+        print_r($invoice_rentals);
+        // $f3->set('content', 'templates/checkout_confirmation.htm');
+        // echo \Template::instance()->render('templates/master.htm');
     }
 );
 

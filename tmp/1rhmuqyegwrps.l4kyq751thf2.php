@@ -37,12 +37,25 @@
 			<div class="col col-lg-4 col-md-4 col-4">
 				<?php if ($admin): ?>
 					
-						<a href="/admin/title/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
+						<a href="/admin/title/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)
+
+							<?php if ($movie['new_release'] ==1): ?>
+								
+									 - New!
+								
+							<?php endif; ?>
+						</a>
 					
 				<?php endif; ?>
 				<?php if ($customer): ?>
 					
-						<a href="/movies/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
+						<a href="/movies/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)
+							<?php if ($movie['new_release'] ==1): ?>
+								
+									 - New!
+								
+							<?php endif; ?>
+						</a>
 					
 				<?php endif; ?>
 			</div>
