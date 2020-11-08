@@ -1769,28 +1769,44 @@ $f3->route('GET /checkout',
 $f3->route('GET /confirm/checkout/@invoiceid', 
     function($f3){
         $invoiceid = $f3->get('PARAMS.invoiceid');
+
+        $invoice_total = 0;
         //Get rentals checked out
         $get_invoice_rentals = "SELECT * FROM invoice 
         JOIN bill ON bill.invoice_id=invoice.invoice_id 
         JOIN transaction ON bill.transaction_id=transaction.transaction_id 
         JOIN rental ON rental.transaction_id=transaction.transaction_id 
+        JOIN inventory ON rental.inventory_id=inventory.inventory_id 
+        JOIN movie ON movie.movie_id=inventory.movie_id 
         WHERE invoice.invoice_id=".$invoiceid;
         $invoice_rentals = $f3->get('db')->exec($get_invoice_rentals);
+        foreach($invoice_rentals as $key=>$rental){
+            $date = new DateTime($rental['due_datetime']);
+            $date = $date->format('Y-m-d');
+            $invoice_rentals[$key]['due'] = $date;
+            $amount = $rental['payment_amount'];
+            $invoice_total += $amount;
+        }
 
         //Get movies purchased
         $get_invoice_purchases = "SELECT * FROM invoice 
         JOIN bill ON bill.invoice_id=invoice.invoice_id 
         JOIN transaction ON bill.transaction_id=transaction.transaction_id 
         JOIN purchase ON purchase.transaction_id=transaction.transaction_id 
+        JOIN inventory ON purchase.inventory_id=inventory.inventory_id 
+        JOIN movie ON movie.movie_id=inventory.movie_id 
         WHERE invoice.invoice_id=".$invoiceid;
 
         $invoice_purchases = $f3->get('db')->exec($get_invoice_purchases);
+        foreach($invoice_purchases as $key=>$purchase){
+            $invoice_total += $purchase['payment_amount'];
+        }
         
         $f3->set('rentals', $invoice_rentals);
         $f3->set('purchases', $invoice_purchases);
-        print_r($invoice_rentals);
-        // $f3->set('content', 'templates/checkout_confirmation.htm');
-        // echo \Template::instance()->render('templates/master.htm');
+        $f3->set('total', $invoice_total);
+        $f3->set('content', 'templates/checkout_confirmation.htm');
+        echo \Template::instance()->render('templates/master.htm');
     }
 );
 

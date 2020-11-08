@@ -9,12 +9,17 @@
 		<div class="col offset-md-1">
 			<p class="h3">Rentals</p>
 			<repeat group="{{ @rentals }}" value="{{ @rental }}">
-				<p>{{ @rental['title'] }}</p>
+				<p>{{ @rental['title'] }} ({{ @rental['inventory_type'] }}) | Due On {{ @rental['due'] }} ${{ @rental['payment_amount'] }}.00 </p>
 			</repeat>
 			<p class="h3">Purchases</p>
 			<repeat group="{{ @purchases }}" value="{{ @purchase }}">
 				<p>{{ @purchase['title'] }}</p>
 			</repeat>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col offset-md-1">
+			<p class="h3">Total: ${{ @total }}.00</p>
 		</div>
 	</div>
 </div>
