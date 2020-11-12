@@ -403,6 +403,7 @@ function update_cart($f3){
     //Calculate cart rental count
     $get_rentals="SELECT COUNT(*) FROM transaction JOIN rental ON transaction.transaction_id=rental.transaction_id WHERE transaction.user_id=".$_SESSION['userid']." AND rental.current_status=0";
     $number_rentals_outstanding = $f3->get('db')->exec($get_rentals)[0]['COUNT(*)'];
+    $rentals_in_cart = count($f3->get('cart')->find('purchase_type', 'Rental'));
     $total_rentals = $number_rentals_outstanding + $rentals_in_cart;
     $f3->set('rental_count', $total_rentals);
     $rentals_available = 2-$total_rentals;
