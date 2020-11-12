@@ -15,6 +15,12 @@
     <a class="btn btn-primary" href="/logout" role="button">Sign Out</a>
     <?php if ($customer): ?>
     	<a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">My Profile</a>
+      <a class="nav-link" href="/movies">Search</a>
+      <a class="nav-link" href="/checkout/<?= ($SESSION['userid']) ?>">Checkout</a>
+      <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Return</a>
+      <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Check balance/Pay fees</a>
+      <a class="nav-link" href="/invoices/<?= ($SESSION['userid']) ?>">View Invoices</a>
+      <a class="nav-link" href="/review/<?= ($SESSION['userid']) ?>">Write review(with score)</a>
     <?php endif; ?>
     <?php if ($admin): ?>
       <a class="nav-link" href="/admin/title">Title</a>      

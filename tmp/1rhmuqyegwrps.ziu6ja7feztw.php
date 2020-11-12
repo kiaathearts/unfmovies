@@ -17,7 +17,7 @@
 				<a href="/profile/return/<?= ($SESSION['userid']) ?>" class="btn btn-info btn-sm mb-2">Return Rentals</a>
 			</p>
 			<?php foreach (($checked_out?:[]) as $rental): ?>
-				<p><?= ($rental['title']) ?></p>
+				<p><?= ($rental['title']) ?> - Due: <?= ($rental['due']) ?></p>
 			<?php endforeach; ?> 
 		</div>
 	</div>

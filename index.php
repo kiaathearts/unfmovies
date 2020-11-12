@@ -135,6 +135,12 @@ $f3->route('GET /',
 
 $f3->route('GET /review/@customerid', 
     function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
         $customerid = $f3->get('PARAMS.customerid');
         $get_customer_rental_history = "SELECT DISTINCT movie.title, movie.movie_id FROM movie 
         LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
@@ -144,8 +150,8 @@ $f3->route('GET /review/@customerid',
 
         $get_customer_movie_history = "SELECT DISTINCT movie.title, movie.movie_id FROM movie 
         LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
-        JOIN purchase ON rental.inventory_id=inventory.inventory_id 
-        JOIN bill ON bill.transaction_id=rental.transaction_id  
+        JOIN purchase ON purchase.inventory_id=inventory.inventory_id 
+        JOIN bill ON bill.transaction_id=purchase.transaction_id  
         WHERE bill.user_id=".$customerid;
         $movies  = $f3->get('db')->exec($get_customer_movie_history);
         $f3->set('movies', $movies);
@@ -212,9 +218,13 @@ function calculate_user_balance($f3, $userid){
                         $balance += 2;
                     }
                 }else{
-                    if($days==2){
-                        //TODO: Set digital availability to unavailable - Do in profile/orders page
-                    }
+                    //Update rental table to reflect return date
+                    $return_digital = "UPDATE rental 
+                    SET return_datetime='".$current_date->format('Y-m-d')."',
+                    current_status=1  
+                    WHERE rental.transaction_id=".$rental['transaction_id'];
+                    $f3->get('db')->exec($return_digital);
+
                 }
             }
         }
@@ -244,13 +254,11 @@ $f3->route('GET /movies',
         $movies_query ='SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id';
         $movies = $f3->get('db')->exec($movies_query);
 
-        // print_r($f3->get('movies'));
         foreach($movies as $key=>$movie){
             $release_date = $movie['release_date'];
             $movies[$key]['new_release'] = is_new_release($release_date);
         }
 
-        // print_r($movies[0]['new_release']);
         $f3->set('movies', $movies);
 
         //Display the page
@@ -455,6 +463,7 @@ $f3->route('GET /profile/@userid',
     function($f3){
         verify_login($f3);
         update_cart($f3);
+        calculate_user_balance($f3, $f3->get('PARAMS.userid'));
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $userid = $f3->get('PARAMS.userid');
@@ -550,8 +559,12 @@ $f3->route('GET /profile/@userid',
         JOIN movie ON movie.movie_id=inventory.movie_id 
         WHERE transaction.user_id=".$userid." AND rental.current_status=0";
         $rentals_checkedout = $f3->get('db')->exec($balance_query);
+        foreach($rentals_checkedout as $key=>$rental){
+            $date = new DateTime($rental['due_datetime']);
+            $date = $date->format('m/d/Y');        
+            $rentals_checkedout[$key]['due'] = $date;
+        }
         $f3->set('checked_out', $rentals_checkedout);
-        // print_r($rentals_checkedout);
         $f3->set('content', 'templates/profile.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -1095,7 +1108,6 @@ function divide_by_year($rentals, $purchases, $start_date, $end_date){
     $start_date = new DateTime($year."-01-01");
     $dateRange = new DatePeriod($start_date, $interval, $end_date);
 
-    // print_r($start_date);
     $years = array();
     foreach ($dateRange as $date) { 
         $years[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
@@ -1138,7 +1150,6 @@ function divide_by_year($rentals, $purchases, $start_date, $end_date){
         $years[$year_key]['purchases']['purchase_sum'] = $yearly_purchase_total;
         $years[$year_key]['total'] = $yearly_rental_total + $yearly_purchase_total;
     }
-    // print_r($years);
     return $years;
 }
 
@@ -1802,7 +1813,12 @@ $f3->route('GET /confirm/checkout/@invoiceid',
 
 $f3->route('GET /invoices/@userid', 
     function($f3){
-
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
         $userid = $f3->get('PARAMS.userid');
         $get_invoices = "SELECT invoice.invoice_id, bill.payment_date, invoice.checkout_total FROM invoice 
         JOIN bill ON bill.invoice_id=invoice.invoice_id 
