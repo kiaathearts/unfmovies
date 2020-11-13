@@ -15,12 +15,12 @@
 		<div class="col cols-1"></div>
 	</div>
 	<div class="row">
-		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/admin/reports/title">Revenue by Title</a></div>
+		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/admin/reports/title">Reports - Title</a></div>
 		<div class="col cols-1"></div>
 		<div class="col cols-1"></div>
 	</div>
 	<div class="row">
-		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/admin/reports/genre">Revenue by Genre</a></div>
+		<div class="col cols-1 offset-5"><a type="button" class="btn btn-info btn-block" href="/admin/reports/genre">Reports - Genre</a></div>
 		<div class="col cols-1"></div>
 		<div class="col cols-1"></div>
 	</div>

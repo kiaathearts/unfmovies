@@ -1,9 +1,15 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <?php if ($admin): ?>
     
+        <a class="navbar-brand" href="/admin">
+          <img src="images/UNF_Logo_SM.jpg" alt="">
+        </a>
       <a class="navbar-brand text-primary" href="/admin">UNFMovies</a>
     
     <?php else: ?>
+<!--       <a class="navbar-brand" href="/">
+          <img src="images/UNF_Logo_SM.jpg" alt="">
+        </a> -->
       <a class="navbar-brand text-primary" href="/">UNFMovies</a>
     
   <?php endif; ?>
@@ -53,7 +59,17 @@
           <div class="row cart-detail">
             <div class="col-lg-8 col-sm-8 col-8 cart-detail-product">
               <a href="/movies/<?= ($cart_item->movieid) ?>"><p><?= ($cart_item->movie_title) ?></p></a>
-              <span class="price text-info"> $<?= ($cart_item->amount) ?></span> <span class="count"> <?= ($cart_item->purchase_type) ?></span>
+              <span class="price text-info"> $<?= ($cart_item->amount) ?> - 
+                <?php if ($cart_item->rental_period): ?>
+                  
+                    <?= ($cart_item->rental_period) ?> Day Rental
+                    
+                  
+                  <?php else: ?>
+                    Purchase
+                  
+                <?php endif; ?>
+              </span> 
             </div>
             <div class="col-lg-1 col-sm-1 col-1">
               <a type="button" href="/movies/cart/remove/<?= ($cart_item->movieid) ?>" class="btn btn-link">
@@ -84,7 +100,7 @@
   <div>
     <?php if (@$_SESSION['max_rentals_reached']): ?>
       
-        <a href="/profile/<?= ($SESSION['userid']) ?>"> You have reached a maximum of two rentals, either return any rentals you have checked out or remove a rental from your cart</a>
+        <a href="/profile/<?= ($SESSION['userid']) ?>">Before you are able to rent any more movies, you will need to remove a rental from your basket or return any rentals you have checked out</a>
       
     <?php endif; ?>
   </div>

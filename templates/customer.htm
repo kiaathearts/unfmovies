@@ -4,58 +4,78 @@
 			<p class="h1">Customer Search</p>
 		</div>
 	</div>
-	<div class="row mb-3">
-		<div class="col">
-			<form method="post" action="/admin/customer" class="form-inline">
-			    <input class="form-control mr-sm-2" type="search" placeholder="Customer Email" name='email' aria-label="Search">
-			    <button class="btn form-control btn-info my-2 my-sm-0" type="submit">Search</button>
-			</form>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			<h4><strong>Rentals Outstanding</strong></h4>
-		</div>
-		<div class="col">
-			<h4><strong>Rental Cost</strong></h4>
-		</div>
-		<div class="col">
-			<h4><strong>Late Fees</strong></h4>
-		</div>
-	</div>
-	<repeat group="{{ @outstandings }}" value="{{ @outstanding }}">
-		<div class="row">
-			<div class="col">
-				<h4>{{ @outstanding.title }}</h4>
-			</div>
-			<div class="col">
-				<h4>${{ @outstanding.rental }}</h4>
-			</div>
-			<div class="col">
-				<h4>${{ @outstanding.fees }}</h4>
-			</div>
-		</div>
-	</repeat>
-	<div class="row mb-3">
-		<div class="col">
-			<h4><strong>Balance: ${{ @balance }}</strong></h4>
-		</div>
-	</div>
-	<div>
-		<h4><strong>Eligible Purchase Returns</strong></h4>
-			<repeat group="{{ @purchases }}" value="{{ @purchase }}">
-				<div class="row">
-					<div class="col">
-						<h4><a href="/admin/return_purchase/{{ @purchase.bill_id }}">{{ @purchase.title }} ({{ @purchase.inventory_type }})</a></h4>
-					</div>
+	<check if="{{ @username }}">
+		<false>
+			<div class="row mb-3">
+				<div class="col">
+					<form method="post" action="/admin/customer" class="form-inline">
+					    <input class="form-control mr-sm-2" type="search" placeholder="Customer Email" name='email' aria-label="Search">
+					    <button class="btn form-control btn-info my-2 my-sm-0" type="submit">Search</button>
+					</form>
 				</div>
-			</repeat>
-	</div>
-	<div class="row">
-		<div class="col">
-			<form method="get" action="/admin/resolve/customer/{{ @customerid }}">
-				<button class="btn btn-info my-2 my-sm-0" type="submit">Resolve Balance</button>
-			</form>
-		</div>
-	</div>	
+			</div>
+		</false>
+		<true>
+			<p class="h1">Results for {{ @username }}</p>
+			<check if="{{ count(@rentals)>0 }}">
+				<true>
+					<p class="h4"><strong>Currently checked out</strong></p>
+					<repeat group="{{ @rentals }}" value="{{ @rental }}">
+						<p class="h5">{{ @rental['title'] }} ({{ @rental['inventory_type']}}) - Due: {{ @rental['due_datetime'] }}</p>
+					</repeat>
+				</true>
+			</check>
+			<check if="{{ count(@outstandings) > 0 }}">
+				<true>
+					<div class="row">
+						<div class="col">
+							<h4><strong>Rentals Outstanding</strong></h4>
+						</div>
+						<div class="col">
+							<h4><strong>Rental Cost</strong></h4>
+						</div>
+						<div class="col">
+							<h4><strong>Late Fees</strong></h4>
+						</div>
+					</div>
+					<repeat group="{{ @outstandings }}" value="{{ @outstanding }}">
+						<div class="row">
+							<div class="col">
+								<h4>{{ @outstanding.title }}</h4>
+							</div>
+							<div class="col">
+								<h4>${{ @outstanding.rental }}</h4>
+							</div>
+							<div class="col">
+								<h4>${{ @outstanding.fees }}</h4>
+							</div>
+						</div>
+					</repeat>
+				</true>
+				<false>
+					<h4>Nothing outstanding</h4>
+				</false>
+			</check>
+			<div class="row mb-3">
+				<div class="col">
+					<h4><strong>Balance: ${{ @balance }}</strong></h4>
+				</div>
+			</div>
+			<div>
+				<h4><strong>Eligible Purchase Returns</strong></h4>
+					<repeat group="{{ @purchases }}" value="{{ @purchase }}">
+						<div class="row">
+							<div class="col">
+								<h4><a href="/admin/return_purchase/{{ @purchase.bill_id }}">{{ @purchase.title }} ({{ @purchase.inventory_type }})</a></h4>
+							</div>
+						</div>
+					</repeat>
+			</div>
+			<div class="row">
+				<div class="col">
+					<a href="/admin/resolve/customer/{{ @customerid }}" class="btn btn-info my-2 my-sm-0" type="submit">Resolve Balance</a>
+				</div>
+			</div>	
+		</true>
+	</check>
 </div>

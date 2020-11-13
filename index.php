@@ -162,11 +162,11 @@ $f3->route('GET /review/@customerid',
 );
 
 function calculate_user_balance($f3, $userid){
-        $balance_query = "SELECT * FROM transaction JOIN rental ON "
-        . "transaction.transaction_id=rental.transaction_id WHERE "
-        . "transaction.user_id=".$userid." "
-        . "AND rental.current_status=0";
+        $balance_query = "SELECT * FROM transaction 
+        JOIN rental ON transaction.transaction_id=rental.transaction_id 
+        WHERE transaction.user_id=".$userid." AND rental.current_status=0";
         $outstanding_rentals = $f3->get('db')->exec($balance_query);
+
         $balance = 0;
         $outstanding_array = [];
         foreach($outstanding_rentals as $rental){
@@ -255,7 +255,7 @@ $f3->route('GET /movies',
         $movies = $f3->get('db')->exec($movies_query);
 
         foreach($movies as $key=>$movie){
-            $release_date = $movie['release_date'];
+            $release_date = $movie['date_released'];
             $movies[$key]['new_release'] = is_new_release($release_date);
         }
 
@@ -331,7 +331,7 @@ $f3->route('POST /movies/query',
         //TODO: Changed column names in actor table to be compatible with multiple join on movies
         //Make certain there are movies to query
         if(!$f3->exists('movies')){
-            $movies_query ="SELECT * 
+            $movies_query ="SELECT movie.movie_id, movie.genre_id, director.director_id, movie.title, movie.description, movie.date_released, movie.rental_period, movie.digital_rental,movie.digital_purchase, movie.vhs_rental, movie.vhs_purchase, movie.dvd_rental, movie.dvd_purchase, movie.bluray_rental, movie.bluray_purchase, movie.available, genre.genre_name, director.first_name, director.last_name, movie_actor.movie_movie_id, movie_actor.actor_actor_id, actor.actor_id, actor.actor_last_name, actor.actor_first_name
                 FROM movie
                 JOIN genre 
                     ON movie.genre_id=genre.genre_id 
@@ -340,10 +340,12 @@ $f3->route('POST /movies/query',
                 JOIN movie_actor
                     ON movie_actor.movie_movie_id = movie.movie_id
                 JOIN actor
-                    ON actor.actor_id = movie_actor.actor_actor_id";
+                    ON actor.actor_id = movie_actor.actor_actor_id
+                GROUP BY movie.movie_id";
             $f3->set('movies', $f3->get('db')->exec($movies_query));
         }
 
+        // print_r($f3->get('movies'));
         //Filter movies
         $filtered_movies = array_filter($f3->get('movies'), function($movie){
             $count = 0;
@@ -409,8 +411,10 @@ function update_cart($f3){
     $rentals_available = 2-$total_rentals;
     if($rentals_available == 0){
         $f3->set('cart_info', 'You have reached your maximum 2 rentals at a time');
+        $_SESSION['max_rentals_reached'] = true;
     }else{
         $f3->set('cart_info', "You can add ".$rentals_available." rental(s) to your cart");
+        $_SESSION['max_rentals_reached'] = false;
     }
 
     //Compute total cart cost here
@@ -747,9 +751,11 @@ $f3->route('POST /admin/@movieid/edit',
                     $update_movie_exec .=" WHERE movie_id=".$movieid."";
                     $f3->get('db')->exec($update_movie_exec);
                 }
-                $f3->reroute('/admin/title');
+                $route = "/admin/title/".$movieid;
+                $f3->reroute($route);
             case "close":
-                $f3->reroute('/admin/title');
+                $route = "/admin/title/".$movieid;
+                $f3->reroute($route);
             break;
             case "delete":
             break;
@@ -802,7 +808,8 @@ $f3->route('GET /admin/title/@movieid',
         $movie = $movie[0];
 
         $f3->set('title_searched', true);
-
+        $f3->set('title', $movie['title']);
+        
         //Get inventory information
         $f3->set('vhs', array(
             'rental' => $movie['vhs_rental'],
@@ -1289,9 +1296,50 @@ $f3->route('POST /admin/reports/genre',
 $f3->route('GET /admin/customer', 
     function($f3){
         verify_login($f3);
-
+        $f3->set('outstandings', array());
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('content', 'templates/customer.htm');
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+$f3->route('GET /admin/customer/@customerid/resolved', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $customerid = $f3->get('PARAMS.customerid');
+        $customer_query = "SELECT * FROM user WHERE user_id='".$customerid."'";
+        $customer = $f3->get('db')->exec($customer_query);
+        $customer_email = $customer[0]['email'];
+        $f3->set('username', $customer_email);
+
+        $customerid = $customer[0]['user_id'];
+        $f3->set('customerid', $customerid);
+
+        $f3->set('content', 'templates/customer.htm');
+
+        $balance = 0;
+
+        $date = new DateTime();
+        $date = $date->format('Y-m-d');
+
+        $query_eligible_purchases = "SELECT * FROM bill 
+        JOIN transaction ON bill.transaction_id=transaction.transaction_id
+        JOIN purchase ON purchase.transaction_id=transaction.transaction_id
+        JOIN inventory ON inventory.inventory_id=purchase.inventory_id 
+        JOIN movie ON movie.movie_id=inventory.movie_id
+        WHERE bill.user_id=".$customerid." AND return_end >'".$date."' 
+        AND return_datetime IS NULL";
+
+        $purchases = $f3->get('db')->exec($query_eligible_purchases);
+        $f3->set('purchases', $purchases);
+
+        $f3->set('balance', $balance);
+        $f3->set('outstandings', array()); 
+        $f3->set('rentals', array());
+
         echo \Template::instance()->render('templates/master.htm');
     }
 );
@@ -1304,6 +1352,7 @@ $f3->route('POST /admin/customer',
         $f3->set('admin', $_SESSION['admin']);
 
         $customer_email = $_POST['email'];
+        $f3->set('username', $customer_email);
 
         $customer_query = "SELECT * FROM user WHERE email='".$customer_email."'";
         $customer = $f3->get('db')->exec($customer_query);
@@ -1335,6 +1384,15 @@ $f3->route('POST /admin/customer',
 
         $purchases = $f3->get('db')->exec($query_eligible_purchases);
         $f3->set('purchases', $purchases);
+
+        $get_checked_out_movies = "SELECT * FROM transaction 
+        JOIN rental ON transaction.transaction_id=rental.transaction_id 
+        JOIN inventory on rental.inventory_id=inventory.inventory_id 
+        JOIN movie on movie.movie_id=inventory.movie_id
+        WHERE transaction.user_id=".$customerid." AND rental.current_status=0";
+        $checked_out_rentals = $f3->get('db')->exec($get_checked_out_movies);
+
+        $f3->set('rentals', $checked_out_rentals);
 
         $f3->set('balance', $balance);
         $f3->set('outstandings', $outstandings); 
@@ -1451,6 +1509,7 @@ $f3->route('GET /admin/resolve/customer/@customerid',
         $outstandings = calculate_user_balance($f3, $customerid);
 
         foreach($outstandings as $outstanding){
+            print_r('in outs');
             $inventory_id = $outstanding['inventory_id'];
 
             //Create transaction for return 
@@ -1525,7 +1584,8 @@ $f3->route('GET /admin/resolve/customer/@customerid',
         }
 
         calculate_user_balance($f3, $customerid);
-        $f3->reroute("/admin/customer/");
+        $route = "/admin/customer/".$customerid."/resolved";
+        $f3->reroute($route);
     }
 );
 
@@ -1668,7 +1728,7 @@ function calculate_purchase_return_date(){
 }
 
 function is_new_release($release_date){
-    return date("Y-m-d") < Date("Y-m-d", strtotime($release_date ." + 60 days"));
+    return date("Y-m-d") < Date("Y-m-d", strtotime($release_date .' + 60 days'));
 }
 
 $f3->route('GET /checkout', 
@@ -1824,7 +1884,8 @@ $f3->route('GET /invoices/@userid',
         $get_invoices = "SELECT invoice.invoice_id, bill.payment_date, invoice.checkout_total FROM invoice 
         JOIN bill ON bill.invoice_id=invoice.invoice_id 
         WHERE bill.user_id=".$userid." 
-        GROUP BY invoice.invoice_id";
+        GROUP BY invoice.invoice_id 
+        ORDER BY bill.payment_date DESC";
 
         $invoices = $f3->get('db')->exec($get_invoices);
         $f3->set('invoices', $invoices);
@@ -1905,13 +1966,16 @@ $f3->route('POST /movies/cart/add/@movieid',
             $query_rentals_outstanding = "SELECT COUNT(*) FROM transaction JOIN rental ON "
                     . "transaction.transaction_id=rental.transaction_id WHERE transaction.user_id="
                     .$_SESSION['userid']." AND rental.current_status=0";
-            //Rentals in cart
+            
+            //Rentals checked out
             $rentals_outstanding = $f3->get('db')->exec($query_rentals_outstanding)[0]['COUNT(*)'];
+
+            //Rentals in cart
+            $cart_rentals = count($f3->get('cart')->find('purchase_type', 'Rental'));
             
             //If user already possesses 2 rentals no more
-            $cart_rentals = count($f3->get('cart')->find('purchase_type', 'Rental'));
-            if(($cart_rentals + $rentals_outstanding) >= 2){
-                //TODO: Add two rental max notification
+            if(($cart_rentals + $rentals_outstanding) == 2){
+                //Add two rental max notification
                 $_SESSION['max_rentals_reached'] = true;
                 $f3->reroute("/movies/".$movieid);
             }
@@ -1937,6 +2001,7 @@ $f3->route('POST /movies/cart/add/@movieid',
         $cost = $movie[$cost_type];
         if(strtolower($purchase_type) == 'rental'){
             $cost = is_new_release($release_date) ? $type_costs['standard'] : $type_costs['new_release'];
+            $rental_period = is_new_release($release_date) ? 3 : 4;
         } 
         
         $f3->get('cart')->set('movieid', $movieid);
@@ -1945,6 +2010,7 @@ $f3->route('POST /movies/cart/add/@movieid',
         $f3->get('cart')->set('format', $format);
         $f3->get('cart')->set('purchase_type',ucfirst($purchase_type));
         $f3->get('cart')->set('cost_type', $cost_type);
+        $f3->get('cart')->set('rental_period', $rental_period);
         $f3->get('cart')->save();
         $f3->get('cart')->reset();
         $f3->reroute("/movies/".$movieid);

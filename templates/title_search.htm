@@ -76,11 +76,12 @@
 		</div>
 		<div class="row">
 			<div class="col">
-				<p>Availability</p>
-				<check if="{{ @available }}">
-				    <false><span>Not available</span></false>
-				    <true><span>Available</span><true>
-				</check>
+				<p class="h4"><strong>Availability: </strong>
+					<check if="{{ @available }}">
+					    <false><span>Not available</span></false>
+					    <true><span>Available</span><true>
+					</check>
+				</p>
 			</div>
 		</div>
 		<div class="row">

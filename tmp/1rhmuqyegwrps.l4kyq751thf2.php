@@ -39,7 +39,7 @@
 					
 						<a href="/admin/title/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)
 
-							<?php if ($movie['new_release'] ==1): ?>
+							<?php if ($movie['new_release']): ?>
 								
 									 - New!
 								

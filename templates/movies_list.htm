@@ -39,7 +39,7 @@
 					<true>
 						<a href="/admin/title/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})
 
-							<check if="{{ @movie['new_release'] }}==1">
+							<check if="{{ @movie['new_release'] }}">
 								<true>
 									 - New!
 								</true>

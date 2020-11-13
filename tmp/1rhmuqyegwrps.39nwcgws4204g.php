@@ -76,11 +76,12 @@
 		</div>
 		<div class="row">
 			<div class="col">
-				<p>Availability</p>
-				<?php if ($available): ?>
-				    
-				    <span>Available</span><?php else: ?><span>Not available</span>
-				<?php endif; ?>
+				<p class="h4"><strong>Availability: </strong>
+					<?php if ($available): ?>
+					    
+					    <span>Available</span><?php else: ?><span>Not available</span>
+					<?php endif; ?>
+				</p>
 			</div>
 		</div>
 		<div class="row">
