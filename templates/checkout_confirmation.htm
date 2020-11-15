@@ -7,14 +7,18 @@
 	</div>
 	<div class="row">
 		<div class="col offset-md-1">
-			<p class="h3">Rentals</p>
-			<repeat group="{{ @rentals }}" value="{{ @rental }}">
-				<p>{{ @rental['title'] }} ({{ @rental['inventory_type'] }}) | Due On {{ @rental['due'] }} ${{ @rental['payment_amount'] }}.00 </p>
-			</repeat>
-			<p class="h3">Purchases</p>
-			<repeat group="{{ @purchases }}" value="{{ @purchase }}">
-				<p>{{ @purchase['title'] }}</p>
-			</repeat>
+			<check if="{{ count(@rentals)>0 }}">
+				<p class="h3">Rentals</p>
+				<repeat group="{{ @rentals }}" value="{{ @rental }}">
+					<p>{{ @rental['title'] }} ({{ @rental['inventory_type'] }}) | Due On {{ @rental['due'] }} ${{ @rental['payment_amount'] }}.00 </p>
+				</repeat>
+			</check>
+			<check if="{{ count(@purchases)>0 }}">
+				<p class="h3">Purchases</p>
+				<repeat group="{{ @purchases }}" value="{{ @purchase }}">
+					<p>{{ @purchase['title'] }}</p>
+				</repeat>
+			</check>
 		</div>
 	</div>
 	<div class="row">

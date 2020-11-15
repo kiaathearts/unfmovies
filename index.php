@@ -1801,6 +1801,12 @@ function is_new_release($release_date){
 
 $f3->route('GET /checkout', 
     function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
+        $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Checkout');
         $invoice_id = '';
         //TODO: Updated inventory type to take 6 characters
@@ -1899,6 +1905,12 @@ $f3->route('GET /checkout',
 
 $f3->route('GET /confirm/checkout/@invoiceid', 
     function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
+        $f3->set('admin', $_SESSION['admin']);
         $invoiceid = $f3->get('PARAMS.invoiceid');
         $f3->set('page_title', 'Confirmation');
 
