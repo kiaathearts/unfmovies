@@ -1372,10 +1372,14 @@ $f3->route('POST /admin/customer',
         $f3->set('content', 'templates/customer.htm');
 
         $balance = 0;
-        foreach($outstandings as $movie){
-            if(trim($movie['fees']) != ""){
-                $balance += $movie['fees'];
+        foreach($outstandings as $key=>$rental){
+            if(trim($rental['fees']) != ""){
+                $balance += $rental['fees'];
             }
+            $release_date = $rental['date_released'];
+            $date_rented = $rental['rental_datetime'];
+            $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 3 : 4;
+            $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
         }
 
         $date = new DateTime();
@@ -1404,6 +1408,9 @@ $f3->route('POST /admin/customer',
             $date_rented = $rental['rental_datetime'];
             $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 3 : 4;
             $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
+
+            $current_date = Date('Y-m-d H:i:s');
+            $checked_out_rentals[$key]['late'] = Date('Y-m-d H:i:s', strtotime($current_date)) > Date('Y-m-d H:i:s', strtotime($rental['due_datetime']));
         }
 
         $f3->set('rentals', $checked_out_rentals);

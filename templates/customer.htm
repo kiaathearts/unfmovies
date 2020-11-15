@@ -22,7 +22,11 @@
 					<p class="h4"><strong>Currently checked out</strong></p>
 					<repeat group="{{ @rentals }}" value="{{ @rental }}">
 						<div></div>
-						<p class="h4">{{ @rental['title'] }} ({{ @rental['inventory_type']}}) - {{ @rental['rental_period'] }} Day Rental | Due: {{ @rental['formatted_date'] }}</p>
+						<p class="h4">{{ @rental['title'] }} ({{ @rental['inventory_type']}}) - {{ @rental['rental_period'] }} Day Rental | Due: {{ @rental['formatted_date'] }}
+							<check if="{{ @rental['late'] }}">
+								<true><span class="text-danger">Late!</span></true>
+							</check>
+						</p>
 					</repeat>
 				</true>
 			</check>
