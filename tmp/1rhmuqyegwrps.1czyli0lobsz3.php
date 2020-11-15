@@ -1,13 +1,13 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <?php if ($admin): ?>
     
-      <a class="navbar-brand" style="width:120px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
-        <img src="../../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 13% 0 0 0;" alt="">
+      <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
+        <img src="../../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
       </a>
     
     <?php else: ?>
-      <a class="navbar-brand" style="width:120px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
-          <img src="../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 13% 0 0 0;" alt="">
+      <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
+          <img src="../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
         </a>
     
   <?php endif; ?>

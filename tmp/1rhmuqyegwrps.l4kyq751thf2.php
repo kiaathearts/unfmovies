@@ -4,8 +4,8 @@
 			<p><?= ($notification) ?></p>
 			<?php if ($admin): ?>
 				
-					<div class="row mt-5">
-						<h4>Admin Title Search</h4>
+					<div class="row">
+						<p class="display-4">Admin Title Search</p>
 					</div>
 				
 				<?php else: ?>

@@ -1,31 +1,27 @@
 <div class="container">
 	<div class="row mb-2">
 		<div class="col">
-			<p class="display-3">Hello, {{ @username }}!</p>
+			<p class="display-2">Hello, {{ @username }}!</p>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col offset-2"><a class="btn btn-light btn-block" href="/movies">Search movies</a></div>
-		<div class="col"></div>
-	</div>
-	<div class="row">
-		<div class="col cols-3 offset-2"><a class="btn btn-light btn-block" href="/checkout/{{ @customerid }}">Checkout(rent)/buy</a></div>
-		<div class="col"></div>
-	</div>
-	<div class="row">
-		<div class="col cols-3 offset-2"><a class="btn btn-light btn-block" href="/profile/{{ @customerid }}">Return</a></div>
-		<div class="col"></div>
-	</div>
-	<div class="row">
-		<div class="col cols-3 offset-2"><a class="btn btn-light btn-block" href="/profile/{{ @customerid }}">Check balance/Pay fees</a></div>
-		<div class="col"></div>
-	</div>
-		<div class="row">
-		<div class="col cols-3 offset-2"><a class="btn btn-light btn-block" href="/invoices/{{ @customerid }}">View Invoices</a></div>
-		<div class="col"></div>
-	</div>
-	<div class="row">
-		<div class="col cols-3 offset-2"><a class="btn btn-light btn-block" href="/review/{{ @customerid }}">Write review(with score)</a></div>
-		<div class="col"></div>
-	</div>
+	<div class="card shadow-sm p-3 mb-5 bg-white rounded" style="width: 600px; margin-left: 25%;">
+			<div class="row">
+				<div class="col-12"><a class="btn btn-light btn-block" href="/movies">Search movies</a></div>
+			</div>
+			<div class="row">
+				<div class="col-12"><a class="btn btn-light btn-block" href="/checkout/{{ @customerid }}">Checkout(rent)/buy</a></div>
+			</div>
+			<div class="row">
+				<div class="col-12"><a class="btn btn-light btn-block" href="/profile/{{ @customerid }}">Return</a></div>
+			</div>
+			<div class="row">
+				<div class="col-12"><a class="btn btn-light btn-block" href="/profile/{{ @customerid }}">Check balance/Pay fees</a></div>
+			</div>
+				<div class="row">
+				<div class="col-12"><a class="btn btn-light btn-block" href="/invoices/{{ @customerid }}">View Invoices</a></div>
+			</div>
+			<div class="row">
+				<div class="col-12"><a class="btn btn-light btn-block" href="/review/{{ @customerid }}">Write review(with score)</a></div>
+			</div>
+</div>
 </div>

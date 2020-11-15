@@ -28,17 +28,16 @@
 			<?php endforeach; ?> 
 		</div>
 	</div>
-	<p class="h3"><strong>Your Movie Reviews</strong></p>
-	<span class="h5">Because you liked <?= ($preferred_genre) ?> may we suggest <a href="/movies/<?= ($movieid) ?>"><?= ($suggested_movie) ?></a></span>
-	<div class="row mt-3">
-			<?php foreach (($reviews?:[]) as $review): ?>
-				<div class="col-4" style="margin-bottom: 20px;">
-			    	<h5 class="sm-title"><strong><?= (trim($review['moviename'])) ?></strong></h5>
-			     		"<?= (trim($review['review'])) ?>"
-					<div class="sm-title">
-						Score: <?= ($review['rating']) ?>/5
-					</div>
-				</div>
-			<?php endforeach; ?>
+	<p class="display-4 mt-3" style="margin-bottom: 10px;">Your Movie Reviews</p>
+	<div class="h5" style="margin-bottom: 40px; margin-left: 20px">Because you liked <?= ($preferred_genre) ?> may we suggest <a href="/movies/<?= ($movieid) ?>"><?= ($suggested_movie) ?></a></div>	
+	<div class="row" style="margin-bottom: 30px; padding: 0 30px 0 30px;">
+		<?php foreach (($reviews?:[]) as $review): ?>
+			<div class="col-3 mb-3">
+				<h5 class="sm-title"><strong><?= (trim($review['moviename'])) ?></strong></h5>
+				(<?= ($review['rating']) ?>/5)<br/>
+	     		<em>"<?= (trim($review['review'])) ?>"</em> <br/>
+				<!-- - <?= (trim($review['email'])) ?> -->
+			</div>
+		<?php endforeach; ?>
 	</div>
 </div>

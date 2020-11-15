@@ -1,53 +1,42 @@
 <div class="container">
-	<!---------------This is where the movie image should display-------------->
-	<!-- <div class="jumbotron jumbotron-fluid"></div> -->
 	<div class="row mb-2">
 		<div class="col">
-			<p class="display-2"><?= ($movie['title']) ?></p>
+			<p class="display-4"><?= ($movie['title']) ?></p>
 		</div>
 	</div>
 	<!--------------------MOVIE DATA-------------------------------->
-	<div class="row">
-		<div class="col">
-			<h5>Available in <?= ($formats_display_string) ?>!</h4>			
-		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			<h5 style="display:inline"><strong>Director:</strong></h5><?= ($movie['first_name']) ?> <?= ($movie['last_name']) ?> <br/>
-			<h5 style="margin-bottom:0; display: inline;"><strong>Cast: </strong></h5><?= ($cast)."
-" ?>
-			<?php foreach (($actors?:[]) as $actor): ?>
-			    <?= (trim($actor)) ?> |
-			<?php endforeach; ?>
-			<h5 style="margin-bottom:0"><strong>Synopsis: </strong></h5>
-				<p><?= (trim($movie['description'])) ?> - <strong><?= ($movie['genre_name']) ?></strong></p>
-
-		</div>
-	</div>
-	<p class="display-4 mt-3">Reviews</p>
-	<div class="row">
-		<?php foreach (($reviews?:[]) as $review): ?>
-			<div class="col-4" style="margin-bottom: 20px;">
-		    	<h5 class="sm-title"><strong><?= (trim($review['email'])) ?></strong></h5>
-		     		"<?= (trim($review['review_text'])) ?>"
-				<div class="sm-title">
-					Rating: <?= ($review['review_stars']) ?>/5
+	<div class="card shadow p-2 mb-5 bg-white rounded">
+		<div class="card-body">
+			<div class="row">
+				<div class="col">
+					<h5>Available in <?= ($formats_display_string) ?>!</h5>			
 				</div>
 			</div>
-		<?php endforeach; ?>
-	</div>
-	<div class="row mt-3">
-	</div>
+			<div class="row">
+				<div class="col">
+					<h5 style="display:inline"><strong>Genre: </strong></h5><?= ($movie['genre_name']) ?> <br/>
+					<h5 style="display:inline"><strong>Director: </strong></h5><?= ($movie['first_name']) ?> <?= ($movie['last_name']) ?> <br/>
+					<h5 style="margin-bottom:0; display: inline;"><strong>Cast: </strong></h5><?= ($cast)."
+" ?>
+					<?php foreach (($actors?:[]) as $actor): ?>
+					    <?= (trim($actor)) ?> |
+					<?php endforeach; ?>
 
-	<div class="row mb-5">
-		<div class="col offset-md-1">
+					<h5 style="margin-bottom:0"><strong>Synopsis: </strong></h5>
+					<p><?= (trim($movie['description'])) ?></p>
+				</div>
+			</div>
+		</div>
+		<hr/>
+		<!----------------------------------Action Buttons------------------------------------->
+		<div class="row">
+		<div class="col" style="margin-left: 20px">
 			<?php if ($SESSION['balance']>0): ?>
 				
 					<p>You have a balance of <?= ($SESSION['balance']) ?> and cannot checkout any movies until this has been resolved. Please, navigate to your profile and resolve your balance.</p>
 				
 				<?php else: ?>
-					<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addToCart">
+					<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addToCart">
 					  Add to Cart
 					</button>
 				
@@ -111,7 +100,7 @@
 			</div>
 
 			<!-------------------- REVIEW ---------------------------->
-			<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#leaveAReview">
+			<button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#leaveAReview">
 			  Leave a Review
 			</button>
 
@@ -147,4 +136,19 @@
 			</div>
 		</div>
 	</div>
+		<!----------------------------------/Action Buttons------------------------------------>
+	</div>
+	<p class="display-4 mt-3">Reviews</p>
+	<div class="row" style="margin-bottom: 30px; padding: 0 30px 0 30px;">
+		<?php foreach (($reviews?:[]) as $review): ?>
+			<div class="col-3 mb-3 p-0">
+				(<?= ($review['review_stars']) ?>/5)<br/>
+	     		<em>"<?= (trim($review['review_text'])) ?>"</em> <br/>
+				- <?= (trim($review['email']))."
+" ?>
+			</div>
+		<?php endforeach; ?>
+	</div>
+
+
 </div>

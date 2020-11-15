@@ -10,6 +10,7 @@
 }
 </style>
 
+<div class="mb-3"></div>
 <div class="footer bg-primary" >
   <address>UNF Movies</address>
 </div> 
