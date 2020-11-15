@@ -2090,7 +2090,7 @@ $f3->route('POST /movies/cart/add/@movieid',
         $cost = $movie[$cost_type];
         if(strtolower($purchase_type) == 'rental'){
             $cost = is_new_release($release_date) ? $type_costs['standard'] : $type_costs['new_release'];
-            $rental_period = is_new_release($release_date) ? 5 : 4;
+            $rental_period = is_new_release($release_date) ? 4 : 5;
         } 
         
         $f3->get('cart')->set('movieid', $movieid);
