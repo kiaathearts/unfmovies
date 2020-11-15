@@ -471,6 +471,9 @@ $f3->route('GET /profile/@userid',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $userid = $f3->get('PARAMS.userid');
+        if($userid != $_SESSION['userid']){
+            $f3->reroute('/error');
+        }
         
         if(strpos($f3->get('SERVER.HTTP_REFERER'), "profile/".$userid) &&
             $_SESSION['show_pass_message']
