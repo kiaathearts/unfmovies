@@ -1417,7 +1417,7 @@ $f3->route('POST /admin/customer',
             }
             $release_date = $rental['date_released'];
             $date_rented = $rental['rental_datetime'];
-            $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 3 : 4;
+            $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 4 : 5;
             $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
         }
 
@@ -1445,7 +1445,7 @@ $f3->route('POST /admin/customer',
         foreach($checked_out_rentals as $key=>$rental){
             $release_date = $rental['date_released'];
             $date_rented = $rental['rental_datetime'];
-            $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 3 : 4;
+            $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 4 : 5;
             $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
 
             $current_date = Date('Y-m-d H:i:s');
@@ -2078,7 +2078,7 @@ $f3->route('POST /movies/cart/add/@movieid',
         $cost = $movie[$cost_type];
         if(strtolower($purchase_type) == 'rental'){
             $cost = is_new_release($release_date) ? $type_costs['standard'] : $type_costs['new_release'];
-            $rental_period = is_new_release($release_date) ? 4 : 3;
+            $rental_period = is_new_release($release_date) ? 5 : 4;
         } 
         
         $f3->get('cart')->set('movieid', $movieid);
