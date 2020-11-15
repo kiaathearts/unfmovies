@@ -11,7 +11,8 @@
 				
 					<p class="h4"><strong>Currently checked out</strong></p>
 					<?php foreach (($rentals?:[]) as $rental): ?>
-						<p class="h5"><?= ($rental['title']) ?> (<?= ($rental['inventory_type']) ?>) - Due: <?= ($rental['due_datetime']) ?></p>
+						<div></div>
+						<p class="h4"><?= ($rental['title']) ?> (<?= ($rental['inventory_type']) ?>) - <?= ($rental['rental_period']) ?> Day Rental | Due: <?= ($rental['formatted_date']) ?></p>
 					<?php endforeach; ?>
 				
 			<?php endif; ?>
@@ -43,7 +44,7 @@
 					<?php endforeach; ?>
 				
 				<?php else: ?>
-					<h4>Nothing outstanding</h4>
+					<h4 class="mt-3">No Rentals Due for Returns</h4>
 				
 			<?php endif; ?>
 			<div class="row mb-3">

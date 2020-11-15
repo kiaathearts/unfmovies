@@ -21,7 +21,8 @@
 				<true>
 					<p class="h4"><strong>Currently checked out</strong></p>
 					<repeat group="{{ @rentals }}" value="{{ @rental }}">
-						<p class="h5">{{ @rental['title'] }} ({{ @rental['inventory_type']}}) - Due: {{ @rental['due_datetime'] }}</p>
+						<div></div>
+						<p class="h4">{{ @rental['title'] }} ({{ @rental['inventory_type']}}) - {{ @rental['rental_period'] }} Day Rental | Due: {{ @rental['formatted_date'] }}</p>
 					</repeat>
 				</true>
 			</check>
@@ -53,7 +54,7 @@
 					</repeat>
 				</true>
 				<false>
-					<h4>Nothing outstanding</h4>
+					<h4 class="mt-3">No Rentals Due for Return</h4>
 				</false>
 			</check>
 			<div class="row mb-3">
