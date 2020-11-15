@@ -1,15 +1,14 @@
 <div class="container">
 	<div class="row">
-		<div class="col offset-4">
+		<div class="col">
 			<p class="display-3">Post a Review</p>
-			<p>For movies you've seen</p>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col">
 			<repeat group="{{ @movies }}" value="{{ @movie }}">
-			    <p><a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}</a></p>
+				<div class="col-3">
+			    	<p><a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}</a></p>
+				</div>
 			</repeat>
-		</div>
 	</div>
 </div>

@@ -1,17 +1,17 @@
 
 <div class="container">
 	<div class="row">
-		<div class="col offset-md-1">
+		<div class="col">
 			<p class="display-4">Your Order History</p>
 		</div>
 	</div>
+	<p class="h3 offset-md-1">Invoices</p>
 	<div class="row">
-		<div class="col offset-md-1">
-			<p class="h3">Invoices</p>
-			<repeat group="{{ @invoices }}" value="{{ @invoice }}">
+		<repeat group="{{ @invoices }}" value="{{ @invoice }}">
+			<div class="col-2 offset-md-1">
 				<p><a href="/invoice/{{ @invoice['invoice_id'] }}">{{ @invoice['payment_date'] }} 
-				| Total: ${{ @invoice['checkout_total'] }}.00 </a></p>
-			</repeat>
-		</div>
+				(${{ @invoice['checkout_total'] }}.00) </a></p>
+			</div>
+		</repeat>
 	</div>
 </div>

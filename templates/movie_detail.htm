@@ -1,21 +1,21 @@
 <div class="container">
 	<!---------------This is where the movie image should display-------------->
-	<div class="jumbotron jumbotron-fluid"></div>
+	<!-- <div class="jumbotron jumbotron-fluid"></div> -->
 	<div class="row mb-2">
-		<div class="col offset-md-1">
+		<div class="col">
 			<p class="display-2">{{ @movie['title'] }}</p>
 		</div>
 	</div>
 	<!--------------------MOVIE DATA-------------------------------->
 	<div class="row">
-		<div class="col offset-md-1">
-			<h4>Available in {{ @formats_display_string }}</h4>			
+		<div class="col">
+			<h5>Available in {{ @formats_display_string }}!</h4>			
 		</div>
 	</div>
 	<div class="row">
-		<div class="col offset-md-1">
-			<h5 style="display:inline"><strong>Director:</strong></h5>{{ @movie['first_name'] }} {{ @movie['last_name'] }}
-			<h5 style="margin-bottom:0"><strong>Cast:</strong></h5>
+		<div class="col">
+			<h5 style="display:inline"><strong>Director:</strong></h5>{{ @movie['first_name'] }} {{ @movie['last_name'] }} <br/>
+			<h5 style="margin-bottom:0; display: inline;"><strong>Cast: </strong></h5>{{ @cast }}
 			<repeat group="{{ @actors }}" value="{{ @actor }}">
 			    {{ trim(@actor) }} |
 			</repeat>
@@ -24,15 +24,19 @@
 
 		</div>
 	</div>
-	<div class="row mb-5">
-		<div class="col offset-md-1">
-			<p class="display-4">Reviews</p>
-			<repeat group="{{ @reviews }}" value="{{ @review }}">
-			    <h5><strong>{{ trim(@review['email']) }}</strong></h5>
-			     "{{ trim(@review['review_text']) }}"
-			     <p>Rating: {{ @review['review_stars'] }}</p>
-			</repeat>
-		</div>
+	<p class="display-4 mt-3">Reviews</p>
+	<div class="row">
+		<repeat group="{{ @reviews }}" value="{{ @review }}">
+			<div class="col-4" style="margin-bottom: 20px;">
+		    	<h5 class="sm-title"><strong>{{ trim(@review['email']) }}</strong></h5>
+		     		"{{ trim(@review.review_text) }}"
+				<div class="sm-title">
+					Rating: {{ @review.review_stars }}/5
+				</div>
+			</div>
+		</repeat>
+	</div>
+	<div class="row mt-3">
 	</div>
 
 	<div class="row mb-5">
@@ -115,7 +119,7 @@
 			  <div class="modal-dialog" role="document">
 			    <div class="modal-content">
 			      <div class="modal-header">
-			        <h5 class="modal-title" id="exampleModalLabel">Leave a review for {{ @movie_title }}</h5>
+			        <h5 class="modal-title" id="exampleModalLabel">Leave a review for <strong>{{ @movie['title'] }}</strong></h5>
 			        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 			          <span aria-hidden="true">&times;</span>
 			        </button>

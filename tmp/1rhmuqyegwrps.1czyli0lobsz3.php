@@ -1,33 +1,17 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <?php if ($admin): ?>
     
-        <a class="navbar-brand" href="/admin">
-          <img src="images/UNF_Logo_SM.jpg" alt="">
-        </a>
-      <a class="navbar-brand text-primary" href="/admin">UNFMovies</a>
+      <a class="navbar-brand" style="width:120px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
+        <img src="../../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 13% 0 0 0;" alt="">
+      </a>
     
     <?php else: ?>
-<!--       <a class="navbar-brand" href="/">
-          <img src="images/UNF_Logo_SM.jpg" alt="">
-        </a> -->
-      <a class="navbar-brand text-primary" href="/">UNFMovies</a>
+      <a class="navbar-brand" style="width:120px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
+          <img src="../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 13% 0 0 0;" alt="">
+        </a>
     
   <?php endif; ?>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <a class="btn btn-primary" href="/logout" role="button">Sign Out</a>
-    <?php if ($customer): ?>
-    	<a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">My Profile</a>
-      <a class="nav-link" href="/movies">Search</a>
-      <a class="nav-link" href="/checkout/<?= ($SESSION['userid']) ?>">Checkout</a>
-      <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Return</a>
-      <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Check balance/Pay fees</a>
-      <a class="nav-link" href="/invoices/<?= ($SESSION['userid']) ?>">View Invoices</a>
-      <a class="nav-link" href="/review/<?= ($SESSION['userid']) ?>">Write review(with score)</a>
-    <?php endif; ?>
     <?php if ($admin): ?>
       <a class="nav-link" href="/admin/title">Title</a>      
       <a class="nav-link" href="/admin/customer">Customer</a>      
@@ -37,6 +21,17 @@
     <?php endif; ?>
   </div>
     <?php if ($customer): ?>
+      <ul style="list-style-type: none; margin-top: 1%;">
+          <a class="nav-link" href="/movies" style="display: inline">Search Movies</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" style="display: inline" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="/profile/<?= ($SESSION['userid']) ?>">Profile</a>
+              <a class="dropdown-item" href="/logout">Sign Out</a>
+            </div>
+        </li>
+      </ul>
+       
     	<div class="dropdown">
         <button type="button" class="btn btn-info" data-toggle="dropdown">
           <i class="fa fa-shopping-cart" aria-hidden="true"></i> Cart <span class="badge badge-pill badge-danger"><?= ($cart->count()) ?></span>
@@ -94,14 +89,23 @@
             </div>
         <?php endif; ?>
       </div>
+     
+    <?php endif; ?>
+    <?php if ($admin): ?>
+      <div class="navbar-collapse collapse w-15 order-3 dual-collapse2">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="dropdown-item" href="/logout">Sign Out</a>
+            </li>
+        </ul>
+      </div>
     <?php endif; ?>
 </nav>
 
-  <div>
-    <?php if (@$_SESSION['max_rentals_reached']): ?>
-      
-        <a href="/profile/<?= ($SESSION['userid']) ?>">Before you are able to rent any more movies, you will need to remove a rental from your basket or return any rentals you have checked out</a>
-      
-    <?php endif; ?>
-
-  </div>
+<div>
+  <?php if (@$_SESSION['max_rentals_reached']): ?>
+    
+      <a href="/profile/<?= ($SESSION['userid']) ?>">Before you are able to rent any more movies, you will need to remove a rental from your basket or return any rentals you have checked out</a>
+    
+  <?php endif; ?>
+</div>

@@ -12,9 +12,9 @@
 //COMMIT: Add session start
 session_start();
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require('connector.php');
 $f3 = \Base::instance();
@@ -125,7 +125,7 @@ $f3->route('GET /',
         }
         $get_user = "SELECT * FROM user WHERE user_id=".$_SESSION['userid'];
         $user = $f3->get('db')->exec($get_user)[0];
-        $f3->set('username', $user['first_name']);
+        $f3->set('username', ucfirst($user['first_name']));
         $f3->set('customerid', $user['user_id']);
 
         $f3->set('content', 'templates/customer_home.htm');
@@ -231,7 +231,6 @@ function calculate_user_balance($f3, $userid){
         $_SESSION['balance'] = $balance;
 
         return $outstanding_array;
-        //TODO: Update invoice to reflect current balance
 }
 
 $f3->route('GET /movies',
@@ -443,7 +442,8 @@ $f3->route('GET /movies/@movieid',
 
     	//retrieve movie from database by id here
         $movie_query = "SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id WHERE movie_id=".$movieid." ";
-        $f3->set('movie', $f3->get('db')->exec($movie_query)[0]);
+        $movie = $f3->get('db')->exec($movie_query)[0];
+        $f3->set('movie', $movie);
 
         //Query available formats and feed into this array
         $f3->set('formats_display_string', 'VHS, DVD, Blu-Ray, Digital');
@@ -455,6 +455,18 @@ $f3->route('GET /movies/@movieid',
         WHERE review.review_movie_id=".$movieid." 
         AND user.user_id=".$userid;
         $reviews = $f3->get('db')->exec($get_reviews);
+
+        //Cast members
+        $get_cast = "SELECT * FROM movie 
+        JOIN movie_actor ON movie.movie_id=movie_actor.movie_movie_id 
+        JOIN actor ON actor.actor_id=movie_actor.actor_actor_id 
+        WHERE movie.movie_id=".$movie['movie_id'];
+        $cast = $f3->get('db')->exec($get_cast);
+        $cast_string = '';
+        foreach($cast as $member){
+            $cast_string .= ucfirst($member['actor_first_name'])." ".ucfirst($member['actor_last_name']).", ";
+        }
+        $f3->set('cast', rtrim($cast_string, ", "));
 
         $f3->set('reviews', $reviews); 
 
@@ -474,7 +486,10 @@ $f3->route('GET /profile/@userid',
         if($userid != $_SESSION['userid']){
             $f3->reroute('/error');
         }
+        $f3->set('page_title', 'Profile');
+
         
+        //Legacy, password change not useful in this context
         if(strpos($f3->get('SERVER.HTTP_REFERER'), "profile/".$userid) &&
             $_SESSION['show_pass_message']
         ){
@@ -483,10 +498,12 @@ $f3->route('GET /profile/@userid',
             $f3->set('show_pass_message', false);
         }
 
-        $f3->set('page_title', 'Profile');
 
         //Query user by id and get all related information
-        $f3->set('username', ucfirst($_SESSION['username']));
+        $get_user = "SELECT * FROM user WHERE user_id=".$_SESSION['userid'];
+        $user = $f3->get('db')->exec($get_user);
+        $username = ucfirst($user[0]['first_name']);
+        $f3->set('username', $username);
 
         //Calculate total user debt here
         $f3->set('balance', $_SESSION['balance']);
@@ -873,6 +890,7 @@ $f3->route('GET /admin/reports/title/@movieid',
 
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+
 
         //Gather all rental invoices for the movie
         $rental_invoices = [];
@@ -1737,13 +1755,13 @@ $f3->route('POST /admin/@adminid/pricing',
     }
 );
 
-$f3->set('ONERROR',
-    function($f3){
-        $f3->set('page_title', 'Page Not Found');
-        $f3->set('content', 'templates/error.htm');
-        echo \Template::instance()->render('templates/master.htm');
-    }
-);
+// $f3->set('ONERROR',
+//     function($f3){
+//         $f3->set('page_title', 'Page Not Found');
+//         $f3->set('content', 'templates/error.htm');
+//         echo \Template::instance()->render('templates/master.htm');
+//     }
+// );
 
 //If new release, due date is 4 days. Otherwise, it is 5 days
 function calculate_due_date($release_date){
@@ -1927,6 +1945,12 @@ $f3->route('GET /invoices/@userid',
 
 $f3->route('GET /invoice/@invoiceid', 
     function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
         $invoiceid = $f3->get('PARAMS.invoiceid');
 
         $invoice_total = 0;

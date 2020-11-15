@@ -5,9 +5,14 @@
 			<check if="{{ @admin }}">
 				<true>
 					<div class="row mt-5">
-						<h4>Admin List</h4>
+						<h4>Admin Title Search</h4>
 					</div>
 				</true>
+				<false>
+					<div class="row">
+						<p class="display-3">Search Movies!</p>
+					</div>
+				</false>
 			</check>
 			<form method="post" action="/movies/query" class="inline">
 				<div class="input-group mb-3">
@@ -41,7 +46,7 @@
 
 							<check if="{{ @movie['new_release'] }}">
 								<true>
-									 - New!
+									 - <span class="sm-title">New!</span>
 								</true>
 							</check>
 						</a>
@@ -52,7 +57,7 @@
 						<a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})
 							<check if="{{ @movie['new_release'] }}==1">
 								<true>
-									 - New!
+									 - <span class="sm-title">New!</span>
 								</true>
 							</check>
 						</a>

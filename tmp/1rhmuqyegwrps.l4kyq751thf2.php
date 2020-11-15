@@ -5,7 +5,12 @@
 			<?php if ($admin): ?>
 				
 					<div class="row mt-5">
-						<h4>Admin List</h4>
+						<h4>Admin Title Search</h4>
+					</div>
+				
+				<?php else: ?>
+					<div class="row">
+						<p class="display-3">Search Movies!</p>
 					</div>
 				
 			<?php endif; ?>
@@ -41,7 +46,7 @@
 
 							<?php if ($movie['new_release']): ?>
 								
-									 - New!
+									 - <span class="sm-title">New!</span>
 								
 							<?php endif; ?>
 						</a>
@@ -52,7 +57,7 @@
 						<a href="/movies/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)
 							<?php if ($movie['new_release'] ==1): ?>
 								
-									 - New!
+									 - <span class="sm-title">New!</span>
 								
 							<?php endif; ?>
 						</a>
