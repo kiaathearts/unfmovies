@@ -37,7 +37,7 @@
 	<div class="row">
 		<div class="col">
 			<?php if ($movie_title): ?>
-				<p class="h3 mb-3"><?= ($movie_title) ?></p>
+				<p class="h2 mb-3"><strong><?= ($movie_title) ?></strong></p>
 				<?php else: ?><p class="h3 mb-3">No data searched</p>
 			<?php endif; ?>
 			
@@ -45,11 +45,10 @@
 	</div>
 	<div class="row">
 		<div class="col">
-			<p class="h3">Total Sales</p>
-			<p class="h4">Rentals to Date: <?= ($total_rentals) ?></p>
-			<p class="h4">Rental Fees to Date: <?= ($total_rental_fees) ?></p>
-			<p class="h4">Purchased to Date: <?= ($total_purchases) ?></p>
-			<p class="h4">Total: <?= ($totals_rental_purchase) ?></p>
+			<p class="h4"><strong>Total Sales</strong></p>
+			<p class="h4">Rentals to Date: $<?= ($total_rentals) ?>.00</p>
+			<p class="h4">Purchased to Date: $<?= ($total_purchases) ?>.00</p>
+			<p class="h4">Total: $<?= ($totals_rental_purchase) ?>.00</p>
 		</div>
 	</div>
 </div>

@@ -23,7 +23,8 @@
 				<p class="h4"><strong>VHS</strong></p>
 			</div>
 			<div class="col">
-				<input name="vhs_inventory_count" type="text" size="5" placeholder="<?= ($vhs['inventory']) ?>"></input>
+				<label for="vhs_inventory_id"><?= ($vhs['location']) ?></label>
+				<input id="vhs_inventory_id" name="vhs_inventory_count" type="text" size="5" placeholder="<?= ($vhs['inventory']) ?>"></input>
 			</div>
 			<div class="col">
 				<input name="vhs_rental_cost" type="text" size="5" placeholder="<?= ($vhs['rental']) ?>"></input>
@@ -37,7 +38,8 @@
 				<p class="h4"><strong>DVD</strong></p>
 			</div>
 			<div class="col">
-				<input name="dvd_inventory_count" type="text" size="5" placeholder="<?= ($dvd['inventory']) ?>"></input>
+				<label for="dvd_inventory_id"><?= ($dvd['location']) ?></label>
+				<input id="dvd_inventory_id" name="dvd_inventory_count" type="text" size="5" placeholder="<?= ($dvd['inventory']) ?>"></input>
 			</div>
 			<div class="col">
 				<input name="dvd_rental_cost" type="text" size="5" placeholder="<?= ($dvd['rental']) ?>"></input>
@@ -51,7 +53,8 @@
 				<p class="h4"><strong>Blu-Ray</strong></p>
 			</div>
 			<div class="col">
-				<input name="bluray_inventory_count" type="text" size="5" placeholder="<?= ($bluray['inventory']) ?>"></input>
+				<label for="bluray_inventory_id"><?= ($bluray['location']) ?></label>
+				<input id="bluray_inventory_id" name="bluray_inventory_count" type="text" size="5" placeholder="<?= ($bluray['inventory']) ?>"></input>
 			</div>
 			<div class="col">
 				<input name="bluray_rental_cost" type="text" size="5" placeholder="<?= ($bluray['rental']) ?>"></input>

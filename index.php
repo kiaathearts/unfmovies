@@ -411,7 +411,6 @@ function update_cart($f3){
     $rentals_available = 2-$total_rentals;
     if($rentals_available == 0){
         $f3->set('cart_info', 'You have reached your maximum 2 rentals at a time');
-        $_SESSION['max_rentals_reached'] = true;
     }else{
         $f3->set('cart_info', "You can add ".$rentals_available." rental(s) to your cart");
         $_SESSION['max_rentals_reached'] = false;
@@ -636,17 +635,20 @@ $f3->route('GET /admin/@movieid/edit',
         $f3->set('vhs', array(
             'rental' => $movie[0]['vhs_rental'],
             'purchase' => $movie[0]['vhs_purchase'],
-            'inventory' => $vhs_movie['inventory_count']
+            'inventory' => $vhs_movie['inventory_count'],
+            'location' => $vhs_movie['location']
         ));
         $f3->set('dvd', array(
             'rental' => $movie[0]['dvd_rental'],
             'purchase' => $movie[0]['dvd_purchase'],
-            'inventory' => $dvd_movie['inventory_count']
+            'inventory' => $dvd_movie['inventory_count'],
+            'location' => $dvd_movie['location']
         ));
         $f3->set('bluray', array(
             'rental' => $movie[0]['bluray_rental'],
             'purchase' => $movie[0]['bluray_purchase'],
-            'inventory' => $bluray_movie['inventory_count']
+            'inventory' => $bluray_movie['inventory_count'],
+            'location' => $bluray_movie['location']
         ));
 
         $f3->set('available', $movie[0]['available']);
@@ -814,22 +816,27 @@ $f3->route('GET /admin/title/@movieid',
         $f3->set('vhs', array(
             'rental' => $movie['vhs_rental'],
             'purchase' => $movie['vhs_purchase'],
-            'inventory' => $vhs_inventory['inventory_count']
+            'inventory' => $vhs_inventory['inventory_count'],
+            'location' => $vhs_inventory['location']
         ));
         $f3->set('dvd', array(
             'rental' => $movie['dvd_rental'],
             'purchase' => $movie['dvd_purchase'],
-            'inventory' => $dvd_inventory['inventory_count']
+            'inventory' => $dvd_inventory['inventory_count'],
+            'location' => $dvd_inventory['location']
         ));
         $f3->set('bluray', array(
             'rental' => $movie['bluray_rental'],
             'purchase' => $movie['bluray_purchase'],
-            'inventory' => $bluray_inventory['inventory_count']
+            'inventory' => $bluray_inventory['inventory_count'],
+            'location' => $bluray_inventory['location']
         ));
         $f3->set('digital', array(
             'rental' => $movie['digital_rental'],
-            'purchase' => $movie['digital_purchase']
+            'purchase' => $movie['digital_purchase'],
+            'location' => $dvd_inventory['location']
         ));
+
 
         $f3->set('available', $movie['available']);
         $f3->set('movieid', $f3->set('movieid', $f3->get('PARAMS.movieid')));
@@ -926,7 +933,8 @@ $f3->route('POST /admin/reports/title/query',
                 JOIN movie_actor
                     ON movie_actor.movie_movie_id = movie.movie_id
                 JOIN actor
-                    ON actor.actor_id = movie_actor.actor_actor_id";
+                    ON actor.actor_id = movie_actor.actor_actor_id
+                GROUP BY movie.movie_id";
             $f3->set('movies', $f3->get('db')->exec($movies_query));
         }
 
@@ -1946,16 +1954,15 @@ $f3->route('GET /checkout/@customerid',
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('cart', $f3->get('cart')); 
 
-        
         $f3->set('content', 'templates/checkout.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
 );
 
+$_SESSION['calls'] = 0;
 $f3->route('POST /movies/cart/add/@movieid',
     function($f3){
         verify_login($f3);
-
         $movieid = $f3->get('PARAMS.movieid');
         $purchase_type = $_POST['buytype'];
         $format = $_POST['format'];

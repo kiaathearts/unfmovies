@@ -103,4 +103,5 @@
         <a href="/profile/<?= ($SESSION['userid']) ?>">Before you are able to rent any more movies, you will need to remove a rental from your basket or return any rentals you have checked out</a>
       
     <?php endif; ?>
+
   </div>

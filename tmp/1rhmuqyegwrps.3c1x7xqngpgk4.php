@@ -8,7 +8,6 @@
 		<div class="row mb-3">
 			<div class="col">
 				<select name="movie_genre" class="form-control custom-select">
-					<option selected>Genre</option>
 					<?php foreach (($genres?:[]) as $genre): ?>
 				  		<option value="<?= ($genre['genre_id']) ?>"><?= ($genre['genre_name']) ?></option>
 					<?php endforeach; ?>
@@ -44,7 +43,6 @@
 			<div class="col">
 				To: <input name="to_date" value="<?= ($today) ?>" type="date"/>		
 			</div>
-			<div class="col"></div>
 			<div class="col"></div>
 			<div class="col"></div>
 			<div class="col"></div>
