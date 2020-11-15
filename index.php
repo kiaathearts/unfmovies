@@ -1757,6 +1757,12 @@ $f3->route('POST /admin/@adminid/pricing',
 
 $f3->set('ONERROR',
     function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
         $f3->set('page_title', 'Page Not Found');
         $f3->set('content', 'templates/error.htm');
         echo \Template::instance()->render('templates/master.htm');
