@@ -127,7 +127,7 @@ $f3->route('GET /',
         $user = $f3->get('db')->exec($get_user)[0];
         $f3->set('username', ucfirst($user['first_name']));
         $f3->set('customerid', $user['user_id']);
-
+        $f3->set('page_title', 'Home');
         $f3->set('content', 'templates/customer_home.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -141,6 +141,7 @@ $f3->route('GET /review/@customerid',
         if($_SESSION['customer']){
             update_cart($f3);
         }
+        $f3->set('page_title', 'Review');
         $customerid = $f3->get('PARAMS.customerid');
         $get_customer_rental_history = "SELECT DISTINCT movie.title, movie.movie_id FROM movie 
         LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
@@ -326,6 +327,7 @@ $f3->route('POST /movies/query',
             update_cart($f3);
         }
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Search Movie');
 
         //TODO: Changed column names in actor table to be compatible with multiple join on movies
         //Make certain there are movies to query
@@ -444,6 +446,7 @@ $f3->route('GET /movies/@movieid',
         $movie_query = "SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id WHERE movie_id=".$movieid." ";
         $movie = $f3->get('db')->exec($movie_query)[0];
         $f3->set('movie', $movie);
+        $f3->set('page_title', 'View Movie');
 
         //Query available formats and feed into this array
         $f3->set('formats_display_string', 'VHS, DVD, Blu-Ray, Digital');
@@ -623,6 +626,7 @@ $f3->route('GET /admin',
         verify_admin($f3);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Home');
 
         $f3->set('content', 'templates/admin_home.htm');
         echo \Template::instance()->render('templates/master.htm');
@@ -692,7 +696,7 @@ $f3->route('POST /admin/@movieid/edit',
         verify_admin($f3);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
-        $f3->set('page_title', 'Title Search'); 
+        $f3->set('page_title', 'Edit Movie'); 
         $f3->set('content', 'templates/title_search.htm'); 
         $movieid = $f3->get('PARAMS.movieid');
 
@@ -823,7 +827,7 @@ $f3->route('GET /admin/title/@movieid',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
 
-        $f3->set('page_title', 'Title Search'); 
+        $f3->set('page_title', 'Movie Info'); 
         $f3->set('content', 'templates/title_search.htm'); 
 
         $movie_query = "SELECT * FROM movie 
@@ -876,6 +880,7 @@ $f3->route('GET /admin/reports/title',
         verify_admin($f3);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Title Reports');
 
         $f3->set('content', 'templates/reports_title.htm');
 
@@ -890,6 +895,7 @@ $f3->route('GET /admin/reports/title/@movieid',
 
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Title Report');
 
 
         //Gather all rental invoices for the movie
@@ -947,6 +953,7 @@ $f3->route('POST /admin/reports/title/query',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('report_search', true);
+        $f3->set('page_title', 'Search Title');
 
         //TODO: Changed column names in actor table to be compatible with multiple join on movies
         //Make certain there are movies to query
@@ -1028,6 +1035,7 @@ $f3->route('GET /admin/reports/genre',
 
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Genres Report');
 
         $f3->set('content', 'templates/reports_genre.htm');
 
@@ -1203,6 +1211,7 @@ $f3->route('POST /admin/reports/genre',
 
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Genre Reports');
         
         $interval = $_POST['opttimetype'];
         $genreid = $_POST['movie_genre'];
@@ -1333,6 +1342,7 @@ $f3->route('GET /admin/customer',
         verify_login($f3);
         $f3->set('outstandings', array());
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Customer Search');
         $f3->set('content', 'templates/customer.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -1344,6 +1354,7 @@ $f3->route('GET /admin/customer/@customerid/resolved',
         verify_admin($f3);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'View Customer');
         $customerid = $f3->get('PARAMS.customerid');
         $customer_query = "SELECT * FROM user WHERE user_id='".$customerid."'";
         $customer = $f3->get('db')->exec($customer_query);
@@ -1385,7 +1396,8 @@ $f3->route('POST /admin/customer',
         verify_admin($f3);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
-
+        $f3->set('page_title', 'View Customer');
+        
         $customer_email = $_POST['email'];
         $f3->set('username', $customer_email);
 
@@ -1702,6 +1714,7 @@ $f3->route('GET /admin/@adminid/pricing',
         $f3->set('admin', $_SESSION['admin']);
 
         $f3->set('content', 'templates/pricing.htm');
+        $f3->set('page_title', 'Pricing');
 
         $get_prices = "SELECT * FROM pricing";
         $prices = $f3->get('db')->exec($get_prices);
@@ -1723,6 +1736,7 @@ $f3->route('POST /admin/@adminid/pricing',
         verify_admin($f3);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Pricing');
 
         $standard = $_POST['standard'];
         $new_release = $_POST['new_release'];
@@ -1787,6 +1801,7 @@ function is_new_release($release_date){
 
 $f3->route('GET /checkout', 
     function($f3){
+        $f3->set('page_title', 'Checkout');
         $invoice_id = '';
         //TODO: Updated inventory type to take 6 characters
         //TODO: Added inventory of all three formats for each movie
@@ -1885,6 +1900,7 @@ $f3->route('GET /checkout',
 $f3->route('GET /confirm/checkout/@invoiceid', 
     function($f3){
         $invoiceid = $f3->get('PARAMS.invoiceid');
+        $f3->set('page_title', 'Confirmation');
 
         $invoice_total = 0;
         //Get rentals checked out
@@ -1935,6 +1951,7 @@ $f3->route('GET /invoices/@userid',
             update_cart($f3);
         }
         $userid = $f3->get('PARAMS.userid');
+        $f3->set('page_title', 'Customer Invoices');
         $get_invoices = "SELECT invoice.invoice_id, bill.payment_date, invoice.checkout_total FROM invoice 
         JOIN bill ON bill.invoice_id=invoice.invoice_id 
         WHERE bill.user_id=".$userid." 
@@ -1958,6 +1975,7 @@ $f3->route('GET /invoice/@invoiceid',
             update_cart($f3);
         }
         $invoiceid = $f3->get('PARAMS.invoiceid');
+        $f3->set('page_title', 'View Invoice');
 
         $invoice_total = 0;
         //Get rentals checked out
@@ -2005,13 +2023,13 @@ $f3->route('GET /checkout/@customerid',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('cart', $f3->get('cart')); 
+        $f3->set('page_title', 'Checkout');
 
         $f3->set('content', 'templates/checkout.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
 );
 
-$_SESSION['calls'] = 0;
 $f3->route('POST /movies/cart/add/@movieid',
     function($f3){
         verify_login($f3);
