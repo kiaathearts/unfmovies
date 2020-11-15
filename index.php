@@ -500,6 +500,8 @@ $f3->route('GET /profile/@userid',
         WHERE user_id=".$_SESSION['userid']."
         GROUP BY g.genre_name";
 
+
+
         $purchase_history_query = "SELECT COUNT(g.genre_name), g.genre_name FROM transaction  
         JOIN purchase ON transaction.transaction_id=purchase.transaction_id 
         JOIN inventory ON inventory.inventory_id=purchase.inventory_id 
@@ -570,7 +572,11 @@ $f3->route('GET /profile/@userid',
             $date = new DateTime($rental['due_datetime']);
             $date = $date->format('m/d/Y');        
             $rentals_checkedout[$key]['due'] = $date;
+
+            $current_date = Date('Y-m-d H:i:s');
+            $rentals_checkedout[$key]['late'] = Date('Y-m-d H:i:s', strtotime($current_date)) > Date('Y-m-d H:i:s', strtotime($rental['due_datetime']));
         }
+
         $f3->set('checked_out', $rentals_checkedout);
         $f3->set('content', 'templates/profile.htm');
         echo \Template::instance()->render('templates/master.htm');

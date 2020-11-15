@@ -17,7 +17,14 @@
 				<a href="/profile/return/{{ @SESSION['userid'] }}" class="btn btn-info btn-sm mb-2">Return Rentals</a>
 			</p>
 			<repeat group="{{ @checked_out }}" value="{{ @rental }}">
-				<p>{{ @rental['title'] }} - Due: {{ @rental['due'] }}</p>
+				<p>
+					{{ @rental['title'] }} - Due: {{ @rental['due'] }} 
+					<check if="{{ @rental['late'] }}">
+						<true>
+							<span class="text-danger">Late!</span>
+						</true>
+					</check>
+				</p>
 			</repeat> 
 		</div>
 	</div>
