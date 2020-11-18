@@ -68,7 +68,7 @@
 					<?php endforeach; ?>
 			</div>
 			<div class="row">
-				<div class="col">
+				<div class="col" style="margin-bottom: 50px">
 					<a href="/admin/resolve/customer/<?= ($customerid) ?>" class="btn btn-info my-2 my-sm-0" type="submit">Resolve Balance</a>
 				</div>
 			</div>	

@@ -10,13 +10,19 @@
 			<check if="{{ count(@rentals)>0 }}">
 				<p class="h3">Rentals</p>
 				<repeat group="{{ @rentals }}" value="{{ @rental }}">
-					<p>{{ @rental['title'] }} ({{ @rental['inventory_type'] }}) | Due On {{ @rental['due'] }} ${{ @rental['payment_amount'] }}.00 </p>
+					<div>
+						{{ @rental['title'] }} ({{ @rental['inventory_type'] }})<br/>
+						<span style="margin-left: 20px">${{ @rental['daily'] }}.00/Day</span> | Due On {{ @rental['due'] }} </span><br/>
+						<span style="margin-left: 20px"> {{ @rental['rental_period'] }} Day total: ${{ @rental['amount'] }}.00</span>
+					</div>
 				</repeat>
 			</check>
 			<check if="{{ count(@purchases)>0 }}">
 				<p class="h3">Purchases</p>
 				<repeat group="{{ @purchases }}" value="{{ @purchase }}">
-					<p>{{ @purchase['title'] }}</p>
+					<div>
+						{{ @purchase['title'] }} ({{ @purchase['inventory_type'] }}) | ${{ @purchase['purchase_cost'] }}.00
+					</div>
 				</repeat>
 			</check>
 		</div>

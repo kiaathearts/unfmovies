@@ -37,18 +37,20 @@
 	<div class="row">
 		<div class="col">
 			<?php if ($movie_title): ?>
-				<p class="h2 mb-3"><strong><?= ($movie_title) ?></strong></p>
+				<p class="h2 mb-3"><strong>Total Revenue for <?= ($movie_title) ?></strong></p>
 				<?php else: ?><p class="h3 mb-3">No data searched</p>
 			<?php endif; ?>
 			
 		</div>
 	</div>
-	<div class="row">
-		<div class="col">
-			<p class="h4"><strong>Total Sales</strong></p>
-			<p class="h4">Rentals to Date: $<?= ($total_rentals) ?>.00</p>
-			<p class="h4">Purchased to Date: $<?= ($total_purchases) ?>.00</p>
-			<p class="h4">Total: $<?= ($totals_rental_purchase) ?>.00</p>
+	<?php if ($movie_title): ?>
+		<div class="row">
+			<div class="col">
+				<p class="h4"><strong>Total Sales</strong></p>
+				<p class="h4">Rentals to Date: $<?= ($total_rentals) ?>.00</p>
+				<p class="h4">Purchased to Date: $<?= ($total_purchases) ?>.00</p>
+				<p class="h4">Total: $<?= ($totals_rental_purchase) ?>.00</p>
+			</div>
 		</div>
-	</div>
+	<?php endif; ?>
 </div>

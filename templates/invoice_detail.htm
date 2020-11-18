@@ -11,7 +11,7 @@
 				<true>
 					<p class="h3">Rentals</p>
 					<repeat group="{{ @rentals }}" value="{{ @rental }}">
-						<p>{{ @rental['title'] }} ({{ @rental['inventory_type'] }}) | Returned On {{ @rental['return'] }} ${{ @rental['payment_amount'] }}.00 </p>
+						<p>{{ @rental['title'] }} ({{ @rental['inventory_type'] }}) | <check if="{{ @rental['return']=='Not yet returned'}}"><False>Returned On</False></check> {{ @rental['return'] }} | ${{ @rental['payment_amount'] }}.00 </p>
 					</repeat>
 				</true>
 			</check>
@@ -21,6 +21,12 @@
 					<repeat group="{{ @purchases }}" value="{{ @purchase }}">
 						<p>{{ @purchase['title'] }} ({{ @purchase['inventory_type'] }}) | ${{ @purchase['payment_amount'] }}.00 </p>
 					</repeat>
+				</true>
+			</check>
+			<check if="{{ @fees>0 }}">
+				<true>
+					<p class="h3">Late Fees</p>
+					<p>${{ @fees }}.00 </p>
 				</true>
 			</check>
 		</div>

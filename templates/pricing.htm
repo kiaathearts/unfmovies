@@ -27,6 +27,7 @@
 		</div>
 		<div class="row">
 			<div class="col">
+				<p class="text-danger">ATTENTION!: This operation will update all movies in the database</p>
 				<button type="submit" class="btn btn-info">Save Changes</button>
 			</div>
 		</div>

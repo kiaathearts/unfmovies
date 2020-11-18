@@ -12,9 +12,9 @@
 //COMMIT: Add session start
 session_start();
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require('connector.php');
 $f3 = \Base::instance();
@@ -690,6 +690,114 @@ $f3->route('GET /admin/@movieid/edit',
     }
 );
 
+$f3->route('POST /admin/movie/add', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Add Movie'); 
+        $f3->set('content', 'templates/add_movie.htm'); 
+        $movie_title = $_POST['movie_title'];
+        $movieid = $f3->get('PARAMS.movieid');
+
+        $update_movie_exec = "INSERT INTO movie ";
+        $columns = "(";
+        $vaues = "(";
+
+        switch($_POST['action']){
+            case "Add":
+                $exec = 0;
+                if(trim($_POST['vhs_inventory_count']) != ""){
+                    $vhs_update = $_POST['vhs_inventory_count']."
+                     WHERE movie_id=".$movieid." AND inventory_type='vhs'";
+                    $update_movie_inventory_exec="UPDATE inventory SET inventory_count=".$vhs_update;
+                    $f3->get('db')->exec($update_movie_inventory_exec);
+                }else{
+                    
+                }
+                if(trim($_POST['dvd_inventory_count']) != ""){
+                    $dvd_update = $_POST['dvd_inventory_count']."
+                     WHERE movie_id=".$movieid." AND inventory_type='dvd'";
+                    $update_movie_inventory_exec = "UPDATE inventory SET inventory_count=".$dvd_update;
+                    $f3->get('db')->exec($update_movie_inventory_exec);
+                }
+                if(trim($_POST['bluray_inventory_count']) != ""){
+                    $bluray_update = $_POST['bluray_inventory_count']." WHERE movie_id=".$movieid." AND inventory_type='bluray'";
+                    $update_movie_inventory_exec = "UPDATE inventory SET inventory_count=".$bluray_update;
+                    $f3->get('db')->exec($update_movie_inventory_exec);   
+                }
+                if(trim($_POST['vhs_rental_cost']) != ""){
+                    $vhs_rental_update=" vhs_rental=".$_POST['vhs_rental_cost'];
+                    $update_movie_exec .= $vhs_rental_update;
+                    $exec++;
+                }
+                if(trim($_POST['vhs_purchase_cost']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $vhs_purchase_update = $seperator." vhs_purchase=".$_POST['vhs_purchase_cost'];
+                    $update_movie_exec .= $vhs_purchase_update;  
+                    $exec++;                  
+                }
+                if(trim($_POST['dvd_rental_cost']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $dvd_rental_update = $seperator." dvd_rental=".$_POST['dvd_rental_cost'];
+                    $update_movie_exec .= $dvd_rental_update;
+                    $exec++;                    
+                }
+                if(trim($_POST['dvd_purchase_cost']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $dvd_purchase_update = $seperator." dvd_purchase=".$_POST['dvd_purchase_cost'];
+                    $update_movie_exec .= $dvd_purchase_update; 
+                    $exec++;                    
+                }
+                if(trim($_POST['bluray_rental_cost']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $bluray_rental_update .= $seperator." bluray_rental=".$_POST['bluray_rental_cost'];
+                    $update_movie_exec .= $bluray_rental_update;  
+                    $exec++;                    
+                }
+                if(trim($_POST['bluray_purchase_cost']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $bluray_purchase_update = $seperator." bluray_purchase=".$_POST['bluray_purchase_cost'];
+                    $update_movie_exec .= $bluray_purchase_update;
+                    $exec++;                      
+                }
+                if(trim($_POST['digital_rental_cost']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $digital_rental_update = $seperator." digital_rental=".$_POST['digital_rental_cost'];
+                    $update_movie_exec .= $digital_rental_update;
+                    $exec++;                    
+                }
+                if(trim($_POST['digital_purchase_cost']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $digital_purchase_update = $seperator." digital_purchase=".$_POST['digital_purchase_cost'];
+                    $update_movie_exec .= $digital_purchase_update;
+                    $exec++;
+                }
+                if(trim($_POST['availability']) != ""){
+                    $seperator = $exec > 0 ? ", " : "";
+                    $update_movie_exec .=$seperator." available=1";
+                    $exec++;
+                }else{
+                    $seperator = $exec > 0 ? ", " : "";
+                    $update_movie_exec .=$seperator." available=0";
+                    $exec++;
+                }
+
+                if($exec > 0){
+                    $update_movie_exec .=" WHERE movie_id=".$movieid."";
+                    $f3->get('db')->exec($update_movie_exec);
+                }
+                $route = "/admin/title/".$movieid;
+                $f3->reroute($route);
+            case "close":
+                $route = "/admin/title/".$movieid;
+                $f3->reroute($route);
+            break;
+        }
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
 $f3->route('POST /admin/@movieid/edit', 
     function($f3){
         verify_login($f3);
@@ -864,7 +972,7 @@ $f3->route('GET /admin/title/@movieid',
         $f3->set('digital', array(
             'rental' => $movie['digital_rental'],
             'purchase' => $movie['digital_purchase'],
-            'location' => $dvd_inventory['location']
+            'location' => $digital_inventory['location']
         ));
 
 
@@ -901,11 +1009,12 @@ $f3->route('GET /admin/reports/title/@movieid',
         //Gather all rental invoices for the movie
         $rental_invoices = [];
         $movie_rental_query = "SELECT * FROM movie 
-        JOIN inventory ON movie.movie_id=inventory.movie_id 
-        JOIN rental ON rental.inventory_id=inventory.inventory_id 
-        JOIN bill ON bill.transaction_id=rental.transaction_id 
-        JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
+        LEFT JOIN rental ON rental.inventory_id=inventory.inventory_id 
+        LEFT JOIN bill ON bill.transaction_id=rental.transaction_id 
+        LEFT JOIN invoice ON invoice.invoice_id=bill.invoice_id 
         WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
+
         $movie_rental_instances = $f3->get('db')->exec($movie_rental_query);
         $f3->set('movie_title', $movie_rental_instances[0]['title']);
 
@@ -1741,8 +1850,25 @@ $f3->route('POST /admin/@adminid/pricing',
         $standard = $_POST['standard'];
         $new_release = $_POST['new_release'];
 
+        //This for keeping display values appropriate
         $set_standard_price = "UPDATE pricing SET price=".$standard." WHERE name='standard'";
         $set_new_release_price = "UPDATE pricing SET price=".$new_release." WHERE name='new_release'";
+
+        //TODO: TEST THIS!!!!
+        //Mass update standard and new release rental prices
+        $standard = $standard/5;
+        $new_release = $new_release/4;
+        $set_movie_standard_rental_prices = "UPDATE movie SET
+        digital_rental=".$standard.",
+        new_release_digital_rental=".$new_release.",
+        vhs_rental=".$standard.",
+        new_release_vhs_rental=".$new_release.",
+        dvd_rental=".$standard.",
+        new_release_dvd_rental=".$new_release.",
+        bluray_rental=".$standard."
+        new_release_bluray_rental=".$new_release;
+        $f3->get('db')->exec($set_movie_standard_rental_prices);
+
 
         //Update everything
         if(trim($standard)!= ""){
@@ -1769,19 +1895,19 @@ $f3->route('POST /admin/@adminid/pricing',
     }
 );
 
-$f3->set('ONERROR',
-    function($f3){
-        verify_login($f3);
-        $f3->set('customer', $_SESSION['customer']);
-        $f3->set('admin', $_SESSION['admin']);
-        if($_SESSION['customer']){
-            update_cart($f3);
-        }
-        $f3->set('page_title', 'Page Not Found');
-        $f3->set('content', 'templates/error.htm');
-        echo \Template::instance()->render('templates/master.htm');
-    }
-);
+// $f3->set('ONERROR',
+//     function($f3){
+//         verify_login($f3);
+//         $f3->set('customer', $_SESSION['customer']);
+//         $f3->set('admin', $_SESSION['admin']);
+//         if($_SESSION['customer']){
+//             update_cart($f3);
+//         }
+//         $f3->set('page_title', 'Page Not Found');
+//         $f3->set('content', 'templates/error.htm');
+//         echo \Template::instance()->render('templates/master.htm');
+//     }
+// );
 
 //If new release, due date is 4 days. Otherwise, it is 5 days
 function calculate_due_date($release_date){
@@ -1885,10 +2011,11 @@ $f3->route('GET /checkout',
                             . "inventory_id, return_end) VALUES(".$transaction_id.", ".$inventory_id.", '".$return_date."')";
                     $f3->get('db')->exec($new_purchase_transaction);
                 }
-                    //Generate bill for the item
-                    $new_bill_statement = "INSERT INTO bill (transaction_id, user_id, invoice_id, employee_id, payment_date, payment_amount) VALUES(".$transaction_id.", "
-                            .$_SESSION['userid'] .", ".$invoice_id.", 1, '".Date('Y-m-d H:i:s')."', ".$item['amount'].")";
-                    $f3->get('db')->exec($new_bill_statement);
+                
+                //Generate bill for the item
+                $new_bill_statement = "INSERT INTO bill (transaction_id, user_id, invoice_id, employee_id, payment_date, payment_amount) VALUES(".$transaction_id.", "
+                        .$_SESSION['userid'] .", ".$invoice_id.", 1, '".Date('Y-m-d H:i:s')."', ".$item['amount'].")";
+                $f3->get('db')->exec($new_bill_statement);
             }
 
             //Update invoice
@@ -1897,6 +2024,7 @@ $f3->route('GET /checkout',
             $f3->get('db')->exec($update_invoice);
         }
 
+        // // print_r($invoice_id);
         $redirect = "/confirm/checkout/".$invoice_id;
 
         $f3->reroute($redirect);
@@ -1914,7 +2042,6 @@ $f3->route('GET /confirm/checkout/@invoiceid',
         $invoiceid = $f3->get('PARAMS.invoiceid');
         $f3->set('page_title', 'Confirmation');
 
-        $invoice_total = 0;
         //Get rentals checked out
         $get_invoice_rentals = "SELECT * FROM invoice 
         JOIN bill ON bill.invoice_id=invoice.invoice_id 
@@ -1924,12 +2051,20 @@ $f3->route('GET /confirm/checkout/@invoiceid',
         JOIN movie ON movie.movie_id=inventory.movie_id 
         WHERE invoice.invoice_id=".$invoiceid;
         $invoice_rentals = $f3->get('db')->exec($get_invoice_rentals);
+
+        $rental_period = 4;
         foreach($invoice_rentals as $key=>$rental){
+            $type = $rental['inventory_type']."_rental";
+            $type = is_new_release($rental['date_released']) ? "new_release_".$type : $type;
+
             $date = new DateTime($rental['due_datetime']);
             $date = $date->format('Y-m-d');
             $invoice_rentals[$key]['due'] = $date;
-            $amount = $rental['payment_amount'];
-            $invoice_total += $amount;
+            $invoice_rentals[$key]['daily'] = $rental[$type];
+            $rental_period = is_new_release($rental['date_released']) ? "new_release_rental_period" : "rental_period";
+            $invoice_rentals[$key]['rental_period'] = $rental[$rental_period];
+            $amount = $rental[$type] * $rental[$rental_period];
+            $invoice_rentals[$key]['amount'] = $amount;
         }
 
         //Get movies purchased
@@ -1943,9 +2078,13 @@ $f3->route('GET /confirm/checkout/@invoiceid',
 
         $invoice_purchases = $f3->get('db')->exec($get_invoice_purchases);
         foreach($invoice_purchases as $key=>$purchase){
-            $invoice_total += $purchase['payment_amount'];
+            $type = $purchase['inventory_type']."_purchase";
+            $invoice_purchases[$key]['purchase_cost'] = $purchase[$type];
         }
-        
+
+        $get_invoice_total = "SELECT checkout_total FROM invoice WHERE invoice_id=".$invoiceid;
+        $invoice_total = $f3->get('db')->exec($get_invoice_total)[0]['checkout_total'];
+
         $f3->set('rentals', $invoice_rentals);
         $f3->set('purchases', $invoice_purchases);
         $f3->set('total', $invoice_total);
@@ -1989,7 +2128,6 @@ $f3->route('GET /invoice/@invoiceid',
         $invoiceid = $f3->get('PARAMS.invoiceid');
         $f3->set('page_title', 'View Invoice');
 
-        $invoice_total = 0;
         //Get rentals checked out
         $get_invoice_rentals = "SELECT * FROM invoice 
         JOIN bill ON bill.invoice_id=invoice.invoice_id 
@@ -2000,8 +2138,11 @@ $f3->route('GET /invoice/@invoiceid',
         WHERE invoice.invoice_id=".$invoiceid;
         $invoice_rentals = $f3->get('db')->exec($get_invoice_rentals);
         foreach($invoice_rentals as $key=>$rental){
-            $date = new DateTime($rental['return_datetime']);
-            $date = $date->format('Y-m-d');
+            $date = "Not yet returned";
+            if($rental['current_status'] == 1){
+                $date = new DateTime($rental['return_datetime']);
+                $date = $date->format('Y-m-d');
+            }
             $invoice_rentals[$key]['return'] = $date;
             $amount = $rental['payment_amount'];
             $invoice_total += $amount;
@@ -2017,13 +2158,19 @@ $f3->route('GET /invoice/@invoiceid',
         WHERE invoice.invoice_id=".$invoiceid;
 
         $invoice_purchases = $f3->get('db')->exec($get_invoice_purchases);
-        foreach($invoice_purchases as $key=>$purchase){
-            $invoice_total += $purchase['payment_amount'];
-        }
+
+
         
+        $get_invoice = "SELECT * FROM invoice WHERE invoice_id=".$invoiceid;
+        $invoice = $f3->get('db')->exec($get_invoice)[0];
+
+        $invoice_total = $invoice['checkout_total'] + $invoice['fees'];
+
+        $f3->set('fees', $invoice['fees']);
         $f3->set('rentals', $invoice_rentals);
         $f3->set('purchases', $invoice_purchases);
         $f3->set('total', $invoice_total);
+
         $f3->set('content', 'templates/invoice_detail.htm');
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -2036,6 +2183,14 @@ $f3->route('GET /checkout/@customerid',
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('cart', $f3->get('cart')); 
         $f3->set('page_title', 'Checkout');
+
+        //Compute total cart cost here
+        $items = $f3->get('cart')->find();
+        $cart_total = 0;
+        foreach($items as $item){
+            $cart_total += $item->amount;
+        }
+        $f3->set('cart_total_cost', $cart_total);  
 
         $f3->set('content', 'templates/checkout.htm');
         echo \Template::instance()->render('templates/master.htm');
@@ -2069,30 +2224,30 @@ $f3->route('POST /movies/cart/add/@movieid',
                 $f3->reroute("/movies/".$movieid);
             }
         }
-        
+
         //If user did not exceed rentals
         // add item
         $movie_query = "SELECT * FROM movie WHERE movie_id=".$movieid;
         $movie = $f3->get('db')->exec($movie_query)[0];
         
-        //TODO: notify cart is heavily determinate on movie naming
-        $get_prices = "SELECT * FROM pricing";
-        $prices = $f3->get('db')->exec($get_prices);
-
-        $type_costs = [];
-        foreach($prices as $price){
-            $type_costs[$price['name']] = $price['price'];
-        }
-
-        $f3->set('new_release_price', $cost['new_release']);
-        $f3->set('standard_price', $cost['standard']);
         $cost_type = strtolower($format)."_".strtolower($purchase_type);
-        $cost = $movie[$cost_type];
+
+        //This cost should remain unchanged if this is a purchase
+        $price = $movie[$cost_type];
+        $cost = $price;
+
+        //If movie is a rental, calculate rental period total cost
         if(strtolower($purchase_type) == 'rental'){
-            $cost = is_new_release($release_date) ? $type_costs['standard'] : $type_costs['new_release'];
-            $rental_period = is_new_release($release_date) ? 4 : 5;
+            if(is_new_release($movie['date_released'])){
+                $cost_type = "new_release_".$cost_type;
+                $rental_period = 4;
+            } else {
+                $rental_period = 5;
+            }
+            $price = $movie[$cost_type];
+            $cost = $price * $rental_period;
         } 
-        
+
         $f3->get('cart')->set('movieid', $movieid);
         $f3->get('cart')->set('movie_title', $movie['title']);
         $f3->get('cart')->set('amount',$cost);
