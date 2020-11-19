@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" style="margin-bottom: 50px">
 	<div class="row mb-3">
 		<div class="col">
 			<p class="h1">Total Revenue for <?= ($genre) ?> by <?= ($interval) ?></p>

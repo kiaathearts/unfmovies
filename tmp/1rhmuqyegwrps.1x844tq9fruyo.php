@@ -9,6 +9,9 @@
 			<div class="col offset-12"><a class="btn btn-light btn-block" href="/admin/title">Locate Title/Update Inventory</a></div>
 		</div>
 		<div class="row">
+			<div class="col offset-12"><a class="btn btn-light btn-block" href="/admin/movie/add">Add New Movie</a></div>
+		</div>
+		<div class="row">
 			<div class="col offset-12"><a class="btn btn-light btn-block" href="/admin/customer">Check User Balance</a></div>
 		</div>
 		<div class="row">

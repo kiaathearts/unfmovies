@@ -2,12 +2,12 @@
   <?php if ($admin): ?>
     
       <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
-        <img src="../../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
+        <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
       </a>
     
     <?php else: ?>
       <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
-          <img src="../../images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
+          <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
         </a>
     
   <?php endif; ?>
@@ -58,7 +58,6 @@
                 <?php if ($cart_item->rental_period): ?>
                   
                     <?= ($cart_item->rental_period) ?> Day Rental
-                    
                   
                   <?php else: ?>
                     Purchase
@@ -76,7 +75,7 @@
         <?php if ($cart->count() > 0): ?>
           <div class="row">
             <div class="col-lg-12 col-sm-12 col-12 text-center checkout">
-              <span class="align-text-bottom"><a class="cart-btn btn-primary btn-block" href="/checkout">Checkout</a></span>
+              <span class="align-text-bottom"><a class="cart-btn btn-primary btn-block" href="/checkout/<?= ($SESSION['userid']) ?>">Proceed to Checkout</a></span>
             </div>
           </div>
           <div class="row total-header-section">

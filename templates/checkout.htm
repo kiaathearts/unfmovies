@@ -1,21 +1,17 @@
 <div class="container">
-  <div class="row total-header-section">
-  	<div class="col-lg-5 col-sm-5 col-5">
-  		<i class="fa fa-shopping-cart" aria-hidden="true"></i> <span class="badge badge-pill badge-danger">{{ @cart->count() }}
-      </span>
-      <check if="{{ @SESSION['balance'] > 0 }}">
-        <true><p>You have a balance of {{ @balance }}, that must be paid before you can make any more purchases or checkout rentals. Please, visit your profile and resolve your balance.</p></true>
-      </check>
-  	</div>
-  	<div class="col-lg-5 col-sm-5 col-5 total-section text-right">
-  		<p>Total: <span class="text-info">${{ @cart_total_cost }}</span></p>
-  	</div>
-  </div>
+	<div class="col-lg-5 col-sm-5 col-5">
+    <check if="{{ @SESSION['balance'] > 0 }}">
+      <true><p>You have a balance of {{ @balance }}, that must be paid before you can make any more purchases or checkout rentals. Please, visit your profile and resolve your balance.</p></true>
+    </check>
+	</div>
   <repeat group="{{ @cart->find() }}" value="{{ @cart_item }}">
     <div class="row cart-detail">
       <div class="col-lg-5 col-sm-5 col-5 cart-detail-product">
-        <a href="/movies/{{ @cart_item->movieid }}"><p>{{ @cart_item->movie_title }}</p></a>
-        <span class="price text-info"> ${{ @cart_item->amount }}</span> <span class="count"> {{ @cart_item->purchase_type }}</span>
+        <a href="/movies/{{ @cart_item->movieid }}">
+          <p class="h2">
+            {{ @cart_item->movie_title }} ${{ @cart_item->amount }} - {{ @cart_item->purchase_type }}
+          </p>
+        </a>
       </div>
       <div class="col-lg-1 col-sm-1 col-1">
         <a type="button" href="/movies/cart/remove/{{ @cart_item->movieid }}" class="btn btn-link">
@@ -24,14 +20,17 @@
       </div>
     </div>
   </repeat>
+  	<div class="col-lg-5 col-sm-5 col-5 total-section text-right">
+  		<p class="h2">Total: <span class="text-info">${{ @cart_total_cost }}</span></p>
+  	</div>
   <check if="{{ @cart->count() > 0}}">
     <div class="row">
-      <div class="col-lg-5 col-sm-5 col-5 text-center checkout">
-        <span class="align-text-bottom"><a class="cart-btn btn-primary btn-block" href="/checkout">Checkout</a></span>
+      <div class="col-2">
+        <a href="/movies/cart/empty" class="btn btn-danger btn-block">Empty Cart</a>
       </div>
-    </div>
-    <div class="row total-header-section">
-        <a href="/movies/cart/empty" class="cart-btn">Empty Cart</a>
+      <div class="col-2">
+        <a href="/checkout" class="btn btn-primary btn-block">Checkout</a>
+      </div>
     </div>
   </check>
   <check if="{{ @cart->count() == 0}}">

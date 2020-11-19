@@ -1,0 +1,71 @@
+
+<div class=container>
+	<div class="row">
+		<div class="col">
+			<p class="h1 mb-3">Add New Movie</p>
+		</div>
+	</div>
+	<form method="post" action="/admin/movie/add">
+		<div class="row p-2">
+			<div class="col-3">
+				Release Date: <input id="release_date" name="release_date" value="2020-01-01" type="date"/>	
+			</div>
+			<div class="col">
+				<input id="movie_title" name="movie_title" type="text" placeholder="Title"/>
+			</div>
+			<div class="col">
+				<select name="movie_genre" class="form-control custom-select">
+	 				<repeat group="{{ @genres }}" value="{{ @genre }}">
+				  		<option value="{{ @genre['genre_id'] }}">{{ @genre['genre_name'] }}</option>
+					</repeat>
+				</select>
+			</div>
+			<div class="col"></div>
+			<div class="col"></div>
+		</div>
+		<div class="row p-2">
+			<div class="col">
+				Director:
+				<select name="director" class="form-control custom-select">
+					<repeat group="{{ @directors }}" value="{{ @director }}">
+				  		<option value="{{ @director['director_id'] }}">{{ @director['first_name'] }} {{ @director['last_name'] }}</option>
+					</repeat>
+				</select>
+			</div>
+<!-- 			<div class="col">
+				<input id="director_first_name" name="director_first_name" type="text" placeholder="Director First Name"></input>
+			</div>
+			<div class="col">
+				<input id="director_last_name" name="director_last_name" type="text" placeholder="Director Last Name"></input>
+			</div> -->
+			<div class="col"></div>
+			<div class="col"></div>			
+		</div>
+		<div class="row p-2">
+			<div class="col">
+				Actor:
+				<select name="actor" class="form-control custom-select">
+					<repeat group="{{ @actors }}" value="{{ @actor }}">
+				  		<option value="{{ @actor['actor_id'] }}">{{ @actor['actor_first_name'] }} {{ @actor['actor_last_name'] }}</option>
+					</repeat>
+				</select>
+			</div>
+<!-- 			<div class="col">
+				<textarea id="movie_actors" name="movie_actors" rows="2" placeholder="Cast, separated by comma"></textarea>
+			</div> -->
+			<div class="col"></div>				
+			<div class="col"></div>	
+			<div class="col"></div>	
+		</div>
+		<div class="row p-2">
+			<div class="col">
+				<textarea id="synopsis" name="synopsis" type="textarea" cols="50" rows="4" placeholder="Synopsis"></textarea>
+			</div>
+		</div>
+		<div class="row p-2">
+			<div class="col">
+				<button type="submit" name="action" value="add" class="btn btn-info">Add</button>
+			</div>
+		</div>
+	</form>
+</div>

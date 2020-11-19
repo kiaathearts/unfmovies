@@ -8,7 +8,9 @@
 //!!! IMPORTANT !!!! SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','') Must be run to disable full group by 
 //Place into /etc/mysql/mysql.conf.d/mysqld.cnf, the lines:
 //sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" - https://stackoverflow.com/questions/23921117/disable-only-full-group-by
-
+//Movie API Key https://api.themoviedb.org/3/movie/550?api_key=46ba4d9debca18872c8aa769c630aab9
+// URL: https://api.themoviedb.org/3/movie?sort_by=popularity.desc?550?api_key=46ba4d9debca18872c8aa769c630aab9
+// Google api AIzaSyCRUK4pRZzGhTAAsNJtBF7RUBmIou81jAU
 //COMMIT: Add session start
 session_start();
 
@@ -21,6 +23,7 @@ $f3 = \Base::instance();
 $f3->set('DEBUG', 3);
 
 
+$apikey = "46ba4d9debca18872c8aa769c630aab9";
 $f3->set('db', $db);
 $f3->set('head', 'templates/head.htm');
 $f3->set('navbar', 'templates/navbar.htm');
@@ -445,8 +448,84 @@ $f3->route('GET /movies/@movieid',
     	//retrieve movie from database by id here
         $movie_query = "SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id WHERE movie_id=".$movieid." ";
         $movie = $f3->get('db')->exec($movie_query)[0];
-        $f3->set('movie', $movie);
         $f3->set('page_title', 'View Movie');
+
+        //Query image from API
+        $url_query_title = str_replace(" ", "+", $movie['title']);
+        $year = new DateTime($movie['date_released']);
+        $year = $year->format('Y');
+
+        $url = "https://api.themoviedb.org/3/search/movie?query=".$url_query_title."&year=".$year."&api_key=46ba4d9debca18872c8aa769c630aab9&language=en-US&page=1&include_adult=false";
+        $dataArray = array();
+        $ch = curl_init();
+        $data = http_build_query($dataArray);
+        $getUrl = $url."?".$data;
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 80);
+
+        $response = curl_exec($ch);
+        // print_r($response);
+
+        if(curl_error($ch)){
+            echo 'Request Error:' . curl_error($ch);
+        }
+        else
+        {
+            $obj = json_decode($response);
+            $movie['image_url'] = "https://image.tmdb.org/t/p/w500".$obj->results[0]->poster_path;
+            // $movie['backdrop'] = 
+            $movie['video_url'] = "https://image.tmdb.org/t/p".$obj->results[0]->video;
+        }
+
+        curl_close($ch);
+
+        //Query video from API
+        $url_query_title = str_replace(" ", "+", $movie['title']);
+        $year = new DateTime($movie['date_released']);
+        $year = $year->format('Y');
+
+        $url = "https://www.googleapis.com/youtube/v3/".urlencode("search?part=snippet&q=Sisters&key=
+AIzaSyC6ctaf2rjK-sI61jYTUwp7ZiDfxDbbT8I");
+        // print_r($url);
+        $dataArray = array();
+        $ch = curl_init();
+        $data = http_build_query($dataArray);
+        $getUrl = $url."?".$data;
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 80);
+
+        $response = curl_exec($ch);
+        print_r($response);
+
+        if(curl_error($ch)){
+            echo 'Request Error:' . curl_error($ch);
+        }
+        else
+        {
+            $obj = json_decode($response);
+            print_r($obj);
+            // $movie['image_url'] = "https://image.tmdb.org/t/p/w500".$obj->results[0]->poster_path;
+            // $movie['backdrop'] = 
+            // $movie['video_url'] = "https://image.tmdb.org/t/p".$obj->results[0]->video;
+        }
+
+        curl_close($ch);
+// GET https://youtube.googleapis.com/youtube/v3/search?q=Scary%20Movie&access_token=AIzaSyCRUK4pRZzGhTAAsNJtBF7RUBmIou81jAU&key=[YOUR_API_KEY] HTTP/1.1
+
+// Authorization: Bearer [YOUR_ACCESS_TOKEN]
+// Accept: application/json
+
+
+
+
+
+        $f3->set('movie', $movie);
 
         //Query available formats and feed into this array
         $f3->set('formats_display_string', 'VHS, DVD, Blu-Ray, Digital');
@@ -690,6 +769,27 @@ $f3->route('GET /admin/@movieid/edit',
     }
 );
 
+$f3->route('GET /admin/movie/add', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $f3->set('page_title', 'Add Movie'); 
+        $f3->set('content', 'templates/add_movie.htm');
+
+        $get_actors = "SELECT * FROM actor";
+        $get_directors = "SELECT * FROM director";
+        $get_genres = "SELECT * FROM genre";
+
+        $f3->set('genres', $f3->get('db')->exec($get_genres));
+        $f3->set('actors', $f3->get('db')->exec($get_actors));
+        $f3->set('directors', $f3->get('db')->exec($get_directors));
+
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
 $f3->route('POST /admin/movie/add', 
     function($f3){
         verify_login($f3);
@@ -697,105 +797,70 @@ $f3->route('POST /admin/movie/add',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Add Movie'); 
-        $f3->set('content', 'templates/add_movie.htm'); 
-        $movie_title = $_POST['movie_title'];
-        $movieid = $f3->get('PARAMS.movieid');
-
-        $update_movie_exec = "INSERT INTO movie ";
-        $columns = "(";
-        $vaues = "(";
 
         switch($_POST['action']){
-            case "Add":
-                $exec = 0;
-                if(trim($_POST['vhs_inventory_count']) != ""){
-                    $vhs_update = $_POST['vhs_inventory_count']."
-                     WHERE movie_id=".$movieid." AND inventory_type='vhs'";
-                    $update_movie_inventory_exec="UPDATE inventory SET inventory_count=".$vhs_update;
-                    $f3->get('db')->exec($update_movie_inventory_exec);
+            case "add":
+                $movie_title = $_POST['movie_title'];
+                $genreid = $_POST['movie_genre'];
+                $release_date = $_POST['release_date'];
+                $synopsis = $_POST['synopsis'];
+                
+                //Get the director
+                $director_id = '';
+                if($_POST['director'] == "New Director"){
+                    $director_first_name = $_POST['director_first_name'];
+                    $director_last_name = $_POST['director_last_name'];
+
+                    $create_new_director =  "INSERT INTO director(first_name, last_name) 
+                    VALUES(".$director_first_name.", ".$director_last_name.")";
+                    $f3->get('db')->exec($create_new_director);
+
+                    $get_director = "SELECT MAX(director_id) FROM director";
+                    $directorid = $f3->get('db')->exec($get_director)[0]['director_id'];  
                 }else{
-                    
-                }
-                if(trim($_POST['dvd_inventory_count']) != ""){
-                    $dvd_update = $_POST['dvd_inventory_count']."
-                     WHERE movie_id=".$movieid." AND inventory_type='dvd'";
-                    $update_movie_inventory_exec = "UPDATE inventory SET inventory_count=".$dvd_update;
-                    $f3->get('db')->exec($update_movie_inventory_exec);
-                }
-                if(trim($_POST['bluray_inventory_count']) != ""){
-                    $bluray_update = $_POST['bluray_inventory_count']." WHERE movie_id=".$movieid." AND inventory_type='bluray'";
-                    $update_movie_inventory_exec = "UPDATE inventory SET inventory_count=".$bluray_update;
-                    $f3->get('db')->exec($update_movie_inventory_exec);   
-                }
-                if(trim($_POST['vhs_rental_cost']) != ""){
-                    $vhs_rental_update=" vhs_rental=".$_POST['vhs_rental_cost'];
-                    $update_movie_exec .= $vhs_rental_update;
-                    $exec++;
-                }
-                if(trim($_POST['vhs_purchase_cost']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $vhs_purchase_update = $seperator." vhs_purchase=".$_POST['vhs_purchase_cost'];
-                    $update_movie_exec .= $vhs_purchase_update;  
-                    $exec++;                  
-                }
-                if(trim($_POST['dvd_rental_cost']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $dvd_rental_update = $seperator." dvd_rental=".$_POST['dvd_rental_cost'];
-                    $update_movie_exec .= $dvd_rental_update;
-                    $exec++;                    
-                }
-                if(trim($_POST['dvd_purchase_cost']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $dvd_purchase_update = $seperator." dvd_purchase=".$_POST['dvd_purchase_cost'];
-                    $update_movie_exec .= $dvd_purchase_update; 
-                    $exec++;                    
-                }
-                if(trim($_POST['bluray_rental_cost']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $bluray_rental_update .= $seperator." bluray_rental=".$_POST['bluray_rental_cost'];
-                    $update_movie_exec .= $bluray_rental_update;  
-                    $exec++;                    
-                }
-                if(trim($_POST['bluray_purchase_cost']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $bluray_purchase_update = $seperator." bluray_purchase=".$_POST['bluray_purchase_cost'];
-                    $update_movie_exec .= $bluray_purchase_update;
-                    $exec++;                      
-                }
-                if(trim($_POST['digital_rental_cost']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $digital_rental_update = $seperator." digital_rental=".$_POST['digital_rental_cost'];
-                    $update_movie_exec .= $digital_rental_update;
-                    $exec++;                    
-                }
-                if(trim($_POST['digital_purchase_cost']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $digital_purchase_update = $seperator." digital_purchase=".$_POST['digital_purchase_cost'];
-                    $update_movie_exec .= $digital_purchase_update;
-                    $exec++;
-                }
-                if(trim($_POST['availability']) != ""){
-                    $seperator = $exec > 0 ? ", " : "";
-                    $update_movie_exec .=$seperator." available=1";
-                    $exec++;
-                }else{
-                    $seperator = $exec > 0 ? ", " : "";
-                    $update_movie_exec .=$seperator." available=0";
-                    $exec++;
+                    $directorid = $_POST['director'];
                 }
 
-                if($exec > 0){
-                    $update_movie_exec .=" WHERE movie_id=".$movieid."";
-                    $f3->get('db')->exec($update_movie_exec);
-                }
-                $route = "/admin/title/".$movieid;
+                //Add movie to movie table
+                $get_last_movie_id = "SELECT MAX(movie_id) FROM movie";
+                $last_movie_id = $f3->get('db')->exec($get_last_movie_id)[0]['MAX(movie_id)'];
+                $movie_id = $last_movie_id + 1;
+
+                $add_movie = "INSERT INTO movie(movie_id, title, genre_id, director_id, description, date_released) 
+                VALUES(".$movie_id.",'".$movie_title."', ".$genreid.", ".$directorid.", '".$synopsis."', '".$release_date."')";
+                $f3->get('db')->exec($add_movie);
+
+                //Add actor to movie_actor
+                $actorid = $_POST['actor'];
+                $add_movie_actor = "INSERT INTO movie_actor(movie_movie_id, actor_actor_id) 
+                VALUES(".$movie_id.", ".$actorid.")";
+                $f3->get('db')->exec($add_movie_actor);
+
+                /******************ADD MOVIE INVENTORY*****************************/
+                $get_genre_name = "SELECT genre_name FROM genre WHERE genre_id=".$genreid;
+                $genre_name = $f3->get('db')->exec($get_genre_name)[0]['genre_name'];
+                $insert_pre = "INSERT INTO inventory(movie_id, inventory_type, inventory_count, location) VALUES(".$movie_id;
+
+                //Insert VHS inventory
+                $insert_vhs = $insert_pre.", 'vhs', 0, 'V".$genreid."".$movie_id."')";
+                $f3->get('db')->exec($insert_vhs);
+
+                //Insert DVD inventory
+                $insert_dvd = $insert_pre.", 'dvd', 0, 'D".$genreid."".$movie_id."')";
+                $f3->get('db')->exec($insert_dvd);
+
+                //Insert Bluray inventory
+                $insert_bluray = $insert_pre.", 'bluray', 0, 'BL".$genreid."".$movie_id."')";
+                $f3->get('db')->exec($insert_bluray);                
+
+
+                $route = "/admin/title/".$movie_id;
                 $f3->reroute($route);
             case "close":
-                $route = "/admin/title/".$movieid;
+                $route = "/admin";
                 $f3->reroute($route);
             break;
         }
-        echo \Template::instance()->render('templates/master.htm');
     }
 );
 $f3->route('POST /admin/@movieid/edit', 
@@ -898,8 +963,31 @@ $f3->route('POST /admin/@movieid/edit',
                 $f3->reroute($route);
             break;
             case "delete":
+                $get_movie_title = "SELECT title FROM movie WHERE movie_id=".$movieid;
+                $movie_title = $f3->get('db')->exec($get_movie_title)[0]['title'];
+                $delete_movie_inventory = "DELETE FROM inventory WHERE movie_id=".$movieid;
+                $f3->get('db')->exec($delete_movie_inventory);
+
+                $delete_movie = "DELETE FROM movie WHERE movie_id=".$movieid;
+                $f3->get('db')->exec($delete_movie);
+                $reroute = "admin/movie/delete_confirm/".$movie_title;
+                $f3->reroute($reroute);
+
             break;
         }
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
+
+$f3->route('GET /admin/movie/delete_confirm/@title', 
+    function($f3){
+        verify_login($f3);
+        verify_admin($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        $title = $f3->get('PARAMS.title');
+        $f3->set('content', 'templates/movie_delete_confirmation.htm');
+        $f3->set('title', $title);        
         echo \Template::instance()->render('templates/master.htm');
     }
 );
@@ -1205,7 +1293,7 @@ function divide_by_week($rentals, $purchases, $start_date, $end_date){
         $weeks[$week_key]['total'] = $weekly_rental_total + $weekly_purchase_total;
     }
     
-    return $weeks;
+    return array_reverse($weeks);
 }
 
 function divide_by_month($rentals, $purchases, $start_date, $end_date){
@@ -1219,7 +1307,6 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
     foreach ($dateRange as $date) { 
         $months[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
             $value_date = $value['rental_datetime'];
-            //TODO: Calculate returned purchases
             
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($date->format('Y-m-d'));
@@ -1231,7 +1318,6 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
     foreach($months as $month_date=>$values){
         $months[$month_date]['purchases'] = array_filter($purchases, function($value) use($month_date){
             $value_date = $value['purchase_datetime'];
-            //TODO: Calculate returned purchases
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($month_date);
             $date_limit = $date_limit->add(new DateInterval('P1M'));
@@ -1259,7 +1345,7 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
         $months[$month_key]['total'] = $monthly_rental_total + $monthly_purchase_total;
     }
 
-    return $months;
+    return array_reverse($months);
 }
 
 function divide_by_year($rentals, $purchases, $start_date, $end_date){
@@ -1272,7 +1358,6 @@ function divide_by_year($rentals, $purchases, $start_date, $end_date){
     foreach ($dateRange as $date) { 
         $years[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
             $value_date = $value['rental_datetime'];
-            //TODO: Calculate returned purchases
             
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($date->format('Y-m-d'));
@@ -1284,7 +1369,6 @@ function divide_by_year($rentals, $purchases, $start_date, $end_date){
     foreach($years as $year_date=>$values){
         $years[$year_date]['purchases'] = array_filter($purchases, function($value) use($year_date){
             $value_date = $value['purchase_datetime'];
-            //TODO: Calculate returned purchases
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($year_date);
             $date_limit = $date_limit->add(new DateInterval('P1Y'));
@@ -1310,7 +1394,7 @@ function divide_by_year($rentals, $purchases, $start_date, $end_date){
         $years[$year_key]['purchases']['purchase_sum'] = $yearly_purchase_total;
         $years[$year_key]['total'] = $yearly_rental_total + $yearly_purchase_total;
     }
-    return $years;
+    return array_reverse($years);
 }
 
 $f3->route('POST /admin/reports/genre', 
@@ -1678,7 +1762,6 @@ $f3->route('GET /admin/resolve/customer/@customerid',
         $outstandings = calculate_user_balance($f3, $customerid);
 
         foreach($outstandings as $outstanding){
-            print_r('in outs');
             $inventory_id = $outstanding['inventory_id'];
 
             //Create transaction for return 

@@ -38,7 +38,7 @@
 		</div>
 		<div class="row">
 			<div class="col">
-				From: <input name="from_date" value="2017-06-01" type="date"/>		
+				From: <input name="from_date" value="2020-01-01" type="date"/>		
 			</div>
 			<div class="col">
 				To: <input name="to_date" value="<?= ($today) ?>" type="date"/>		
