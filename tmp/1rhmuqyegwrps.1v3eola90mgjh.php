@@ -13,5 +13,7 @@
 
 <div class="mb-3"></div>
 <div class="footer" >
-  <address>UNF Movies</address>
+	<div class="text-center" >
+	  <img src="/images/unfmoviesnoangle.png" style="width: 40px; height: auto" class="rounded mx-auto" alt="UNFMovies Logo">
+	</div>
 </div> 

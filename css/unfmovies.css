@@ -6,13 +6,16 @@ body{
 .navbar {
 	background-color: #013F70;
 }
-.navbar a{
-	color: #fff;
-}
 
+.navbar .nav-link{
+	color: #fff;
 }
 
 .sm-title{
 	font-family: 'Poppins', 'sans-serif';
 	font-weight: bold;
+}
+
+.group-title{
+	color: #013F70;	
 }

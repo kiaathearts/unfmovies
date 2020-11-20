@@ -1,39 +1,46 @@
 <nav class="navbar navbar-expand-lg">
   <?php if ($admin): ?>
     
-      <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
+      <a class="navbar-brand" style="width:150px; height: 105px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
         <!-- <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt=""> -->
-        <img src="/images/unfmoviesnoangle.png" style="width: 70%; height: auto; margin: 0 0 0 0;" alt="">
+        <img src="/images/unfmoviesangle.png" style="width: 70%; height: auto; margin: 4% 0 0 0;" alt="">
       </a>
     
     <?php else: ?>
-      <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
+      <a class="navbar-brand" style="width:150px; height: 105px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
           <!-- <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt=""> -->
-          <img src="/images/unfmoviesangle.png" style="width: 80%; height: auto; margin: 4% 0 0 0;" alt="">
+          <img src="/images/unfmoviesangle.png" style="width: 70%; height: auto; margin: 4% 0 0 0;" alt="">
         </a>
     
   <?php endif; ?>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <?php if ($admin): ?>
-      <a class="nav-link" href="/admin/title">Title</a>      
-      <a class="nav-link" href="/admin/customer">Customer</a>      
-      <a class="nav-link" href="/admin/reports/title">Reports by Title</a>      
-      <a class="nav-link" href="/admin/reports/genre">Reports by Genre</a>      
-      <a class="nav-link" href="/admin/<?= ($SESSION['employee_id']) ?>/pricing">Pricing</a>      
+      
+        <a class="nav-link" href="/admin/title">Title</a>      
+        <a class="nav-link" href="/admin/customer">Customer</a>      
+        <a class="nav-link" href="/admin/reports/title">Reports by Title</a>      
+        <a class="nav-link" href="/admin/reports/genre">Reports by Genre</a>      
+        <a class="nav-link" href="/admin/<?= ($SESSION['employee_id']) ?>/pricing">Pricing</a>      
+      
+      <?php else: ?>
+        <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Return Rentals</a> |     
+        <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Check and <br/> Pay Balance</a> |     
+        <a class="nav-link" href="/invoices/<?= ($SESSION['userid']) ?>">Invoices</a>      
+      
     <?php endif; ?>
   </div>
     <?php if ($customer): ?>
       <ul style="list-style-type: none; margin-top: 1%;">
-          <a class="nav-link" href="/movies" style="display: inline">Search Movies</a>
+          <!-- <a class="nav-link" href="/movies" style="display: inline">Search Movies</a> -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" style="display: inline" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a>
+            <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Hello, <?= (ucfirst($SESSION['first_name'])) ?><br/><span style="margin-left: 35px">Profile</span></a>
+<!--             <a class="nav-link dropdown-toggle" style="display: inline" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a> -->
             <div class="dropdown-menu">
-              <a class="dropdown-item" href="/profile/<?= ($SESSION['userid']) ?>">Profile</a>
-              <a class="dropdown-item" href="/logout">Sign Out</a>
             </div>
         </li>
       </ul>
-       
+        
+      <!---------------------------------------Cart------------------------------------------->
     	<div class="dropdown">
         <button type="button" class="btn nav-cart-btn" data-toggle="dropdown">
           <i class="fa fa-shopping-cart" aria-hidden="true"></i> Cart <span class="badge badge-pill badge-danger"><?= ($cart->count()) ?></span>
@@ -90,17 +97,11 @@
             </div>
         <?php endif; ?>
       </div>
+    </div>
+    <!---------------------------------------/Cart------------------------------------------->
      
     <?php endif; ?>
-    <?php if ($admin): ?>
-      <div class="navbar-collapse collapse w-15 order-3 dual-collapse2">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="dropdown-item" href="/logout">Sign Out</a>
-            </li>
-        </ul>
-      </div>
-    <?php endif; ?>
+    <a class="nav-link" href="/logout">Sign Out</a>
 </nav>
 
 <div>

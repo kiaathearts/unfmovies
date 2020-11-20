@@ -293,18 +293,32 @@ $f3->route('GET /movies',
     	$f3->set('page_title', 'Movies');
 
         //Query genres here
-        $f3->set('genres',$f3->get('db')->exec('SELECT * FROM genre'));
+        $genres = $f3->get('db')->exec('SELECT * FROM genre ORDER BY genre_name ASC');
+        $f3->set('genres', $genres);
 
-        //Initialize movies
-        $movies_query ='SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id';
-        $movies = $f3->get('db')->exec($movies_query);
-
-        foreach($movies as $key=>$movie){
-            $release_date = $movie['date_released'];
-            $movies[$key]['new_release'] = is_new_release($release_date);
+        $grouped_movies = array();
+        foreach($genres as $genre){
+            $grouped_movies[$genre['genre_name']] = $f3->get('db')->exec("SELECT * FROM movie WHERE genre_id=".$genre['genre_id']." ORDER BY date_released DESC"); 
+            foreach($grouped_movies[$genre['genre_name']] as $key=>$movie){
+                $release_date = $movie['date_released'];
+                $grouped_movies[$genre['genre_name']][$key]['new_release'] = is_new_release($release_date);
+            }
         }
 
-        $f3->set('movies', $movies);
+        // print_r($grouped_movies);
+
+        $f3->set('grouped_movies', $grouped_movies);
+
+        //Initialize movies
+        // $movies_query ='SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id';
+        // $movies = $f3->get('db')->exec($movies_query);
+
+        // foreach($movies as $key=>$movie){
+        //     $release_date = $movie['date_released'];
+        //     $movies[$key]['new_release'] = is_new_release($release_date);
+        // }
+
+        // $f3->set('movies', $movies);
 
         //Display the page
     	$f3->set('content', 'templates/movies_list.htm');  
@@ -387,7 +401,7 @@ $f3->route('POST /movies/query',
                     ON movie_actor.movie_movie_id = movie.movie_id
                 JOIN actor
                     ON actor.actor_id = movie_actor.actor_actor_id
-                GROUP BY movie.movie_id";
+                GROUP BY movie.movie_id ORDER BY date_released DESC";
             $f3->set('movies', $f3->get('db')->exec($movies_query));
         }
 
@@ -434,8 +448,26 @@ $f3->route('POST /movies/query',
             return $count == $goal;
         });
 
+        $f3->set('has_movies', count($filtered_movies)>0);
+
         //Query genres here
-        $f3->set('genres',$f3->get('db')->exec('SELECT * FROM genre'));
+        $genres = $f3->get('db')->exec('SELECT * FROM genre ORDER BY genre_name ASC');
+        $f3->set('genres', $genres);
+
+        //Group movies into genres
+        $grouped_movies = array();
+        foreach($genres as $genre){
+            $grouped_movies[$genre['genre_name']] = array_filter($filtered_movies, function ($movie) use ($genre){
+                return $movie['genre_id'] == $genre['genre_id'];
+            }); 
+            foreach($grouped_movies[$genre['genre_name']] as $key=>$movie){
+                $release_date = $movie['date_released'];
+                $grouped_movies[$genre['genre_name']][$key]['new_release'] = is_new_release($release_date);
+            }
+        }
+
+
+        $f3->set('grouped_movies', $grouped_movies);
 
         //Set movies in view
         $f3->set('movies', $filtered_movies);
@@ -546,13 +578,6 @@ $f3->route('GET /movies/@movieid',
         else
         {
             $obj = json_decode($response);
-            // $objs = (array)$obj;
-            // $objs = $obj->items;
-            // foreach($objs as $item){
-            //     if(strcmp($movie['title'], $item->snippet->title) < 0){
-            //         print_r($item->snippet->title);
-            //     }
-            // }
             $movie['video'] = "https://www.youtube.com/embed/".$obj->items[0]->id->videoId;
         }
 
@@ -2140,7 +2165,6 @@ $f3->route('GET /checkout',
             $f3->get('db')->exec($update_invoice);
         }
 
-        // // print_r($invoice_id);
         $redirect = "/confirm/checkout/".$invoice_id;
 
         $f3->reroute($redirect);
