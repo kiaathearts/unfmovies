@@ -12,7 +12,7 @@
 <body class="login-body">
 <div class="container">
         <div class="card mx-auto text-light login">
-	  <h5 class="card-header bg-info">Welcome to UNFMovies!</h5>
+	  <h5 class="card-header" style="background-color: #013F70;">Welcome to UNFMovies!</h5>
 	  <div class="card-body">
 	  	<?php if ($admin_login): ?>
 	  		
@@ -33,13 +33,13 @@
 	    		
 	    	<?php endif; ?>
 	    	<input type="password" class="form-control p-1 m-1" placeholder="password" name="password">
-	    	<button type="submit" class="btn btn-info btn-lg btn-block">Login</button>
+	    	<button type="submit" class="btn btn-lg btn-block" style="background-color: #013F70; color: #fff">Login</button>
 	    	<?php if ($admin_login): ?>
 	    		
-	    			<a href="/login"> Go to customer login</a>
+	    			<a href="/login" style="color: #013F70"> Go to customer login</a>
 	    		
 	    		<?php else: ?>
-	    			<a href="/admin/login">Go to admin login</a>
+	    			<a href="/admin/login" style="color: #013F70">Go to admin login</a>
 	    		
 	    	<?php endif; ?>
 
