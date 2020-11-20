@@ -274,6 +274,7 @@ $f3->route('GET /movies',
             update_cart($f3);
         }
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('found', true);
 
 //1661, 1181, 1598, 1058, 1687, 1237, 1659, 1406
 
@@ -448,7 +449,7 @@ $f3->route('POST /movies/query',
             return $count == $goal;
         });
 
-        $f3->set('has_movies', count($filtered_movies)>0);
+        $f3->set('found', count($filtered_movies)>0);
 
         //Query genres here
         $genres = $f3->get('db')->exec('SELECT * FROM genre ORDER BY genre_name ASC');
@@ -1056,6 +1057,7 @@ $f3->route('GET /admin/title',
         verify_admin($f3);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
+        $f3->set('found', true);
 
         //General page values
         $f3->set('page_title', 'Title Search');
@@ -1135,7 +1137,7 @@ $f3->route('GET /admin/reports/title',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Title Reports');
-
+        $f3->set('found', true);
         $f3->set('content', 'templates/reports_title.htm');
 
         echo \Template::instance()->render('templates/master.htm');
@@ -1162,7 +1164,9 @@ $f3->route('GET /admin/reports/title/@movieid',
         WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
 
         $movie_rental_instances = $f3->get('db')->exec($movie_rental_query);
-        $f3->set('movie_title', $movie_rental_instances[0]['title']);
+        $exe1 = $f3->set('movie_title', $movie_rental_instances[0]['title']);
+
+        $f3->set('found', true);
 
         $total_rentals = 0;
         $total_rental_fees = 0;
@@ -1192,7 +1196,6 @@ $f3->route('GET /admin/reports/title/@movieid',
         }
 
         $f3->set('total_purchases', $total_purchases);
-
         $totals_rental_purchase = $total_purchases + $total_rentals + $total_rental_fees;
         $f3->set('totals_rental_purchase', $totals_rental_purchase);
         $f3->set('content', 'templates/reports_title.htm');
@@ -1268,6 +1271,8 @@ $f3->route('POST /admin/reports/title/query',
 
             return $count == $goal;
         });
+
+        $f3->set('found', count($filtered_movies)>0);
 
         //Query genres here
         $f3->set('genres',$f3->get('db')->exec('SELECT * FROM genre'));

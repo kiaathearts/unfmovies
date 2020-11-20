@@ -22,25 +22,21 @@
 					</div>
 				</div>
 			</form>
+			<check if="{{ @found==false }}">
+				<p>No movies matching your criteria were found</p>
+			</check>
 			<repeat group="{{ @movies }}" value="{{ @movie }}">
 				<div class="col col-lg-4 col-md-4 col-4">
 					<a href="/admin/reports/title/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})</a>
-				<check if="{{ @admin }}">
-				</check>
-				<check if="{{ @customer }}">
-					<a href="/movies/{{ @movie['movie_id'] }}">{{ @movie['title'] }}({{ @movie['date_released'] }})</a>
-				</check>
-			</div>
-		</repeat>
+				</div>
+			</repeat>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col">
 			<check if="{{ @movie_title }}">
 				<true><p class="h2 mb-3"><strong>Total Revenue for {{ @movie_title }}</strong></p></true>
-				<false><p class="h3 mb-3">No data searched</p></false>
 			</check>
-			
 		</div>
 	</div>
 	<check if="{{ @movie_title }}">

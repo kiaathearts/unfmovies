@@ -22,25 +22,21 @@
 					</div>
 				</div>
 			</form>
+			<?php if ($found==false): ?>
+				<p>No movies matching your criteria were found</p>
+			<?php endif; ?>
 			<?php foreach (($movies?:[]) as $movie): ?>
 				<div class="col col-lg-4 col-md-4 col-4">
 					<a href="/admin/reports/title/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
-				<?php if ($admin): ?>
-				<?php endif; ?>
-				<?php if ($customer): ?>
-					<a href="/movies/<?= ($movie['movie_id']) ?>"><?= ($movie['title']) ?>(<?= ($movie['date_released']) ?>)</a>
-				<?php endif; ?>
-			</div>
-		<?php endforeach; ?>
+				</div>
+			<?php endforeach; ?>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col">
 			<?php if ($movie_title): ?>
 				<p class="h2 mb-3"><strong>Total Revenue for <?= ($movie_title) ?></strong></p>
-				<?php else: ?><p class="h3 mb-3">No data searched</p>
 			<?php endif; ?>
-			
 		</div>
 	</div>
 	<?php if ($movie_title): ?>
