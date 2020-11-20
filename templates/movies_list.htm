@@ -30,6 +30,33 @@
 					</div>
 				</div>
 			</form>
+			<div id="carouselExampleControls" class="carousel slide" data-ride="carousel" >
+				  <div class="carousel-inner" style="padding: 0 50px 0 90px">
+				    <div class="carousel-item active">
+				      <a href="/movies/1602"><img src="https://image.tmdb.org/t/p/w300/oJZSajKLJkoTOzSZQN2ZwRnPwHZ.jpg" alt="First slide"></a>
+				      <a href="/movies/1627"><img src="https://image.tmdb.org/t/p/w300/pm1KzNEeJ88uN9vXKAFWnneeum9.jpg" alt="Second slide"></a>
+				      <a href="/movies/1693"><img src="https://image.tmdb.org/t/p/w300/n8tsrPLem70exhXHfSausV7FlPx.jpg" alt="Third slide"></a>
+				    </div>
+				    <div class="carousel-item">
+ 				      <a href="/movies/1661"><img src="https://image.tmdb.org/t/p/w300/yJQLWoizC5zBjVk9dr2Qo1K1TCI.jpg" alt="Second slide"></a>
+			    	  <a href="/movies/1181"><img src="https://image.tmdb.org/t/p/w300/mumarnp1ZBHFdmt2q6x9ELuC3x0.jpg" alt="First slide"></a>
+				      <a href="/movies/1237"><img src="https://image.tmdb.org/t/p/w300/nQdBE1P0r4ZrgGqy5EX8sL2kXG6.jpg" alt="Second slide"></a>
+				    </div>
+				    <div class="carousel-item">
+				      <a href="/movies/1406"><img src="https://image.tmdb.org/t/p/w300/idbNSe8zsYKQL97dJApfOrDSdya.jpg" alt="Third slide"></a>
+				      <a href="/movies/1598"><img src="https://image.tmdb.org/t/p/w300/y4Q6EU7cLndLAFuDZZdNAD09hMU.jpg " alt="Third slide"></a>
+   			    	  <a href="/movies/1659"><img src="https://image.tmdb.org/t/p/w300/gevSrXe80v51mrE9bTk5eO1dLdU.jpg" alt="First slide"></a>
+				    </div>
+				  </div>
+				  <a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
+				    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+				    <span class="sr-only">Previous</span>
+				  </a>
+				  <a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
+				    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+				    <span class="sr-only">Next</span>
+				  </a>
+			</div>
 		</div>
 	</div>
 	<div class="row">

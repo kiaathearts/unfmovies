@@ -1,13 +1,15 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg">
   <?php if ($admin): ?>
     
       <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
-        <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
+        <!-- <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt=""> -->
+        <img src="/images/unfmoviesnoangle.png" style="width: 70%; height: auto; margin: 0 0 0 0;" alt="">
       </a>
     
     <?php else: ?>
       <a class="navbar-brand" style="width:150px; height: 110px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
-          <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt="">
+          <!-- <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt=""> -->
+          <img src="/images/unfmoviesangle.png" style="width: 80%; height: auto; margin: 4% 0 0 0;" alt="">
         </a>
     
   <?php endif; ?>
@@ -33,7 +35,7 @@
       </ul>
        
     	<div class="dropdown">
-        <button type="button" class="btn btn-info" data-toggle="dropdown">
+        <button type="button" class="btn nav-cart-btn" data-toggle="dropdown">
           <i class="fa fa-shopping-cart" aria-hidden="true"></i> Cart <span class="badge badge-pill badge-danger"><?= ($cart->count()) ?></span>
         </button>
         <div class="dropdown-menu">

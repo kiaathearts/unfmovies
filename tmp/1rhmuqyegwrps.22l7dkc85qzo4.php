@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="../css/unfmovies.css">
 	<style>
 	   @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;600&family=Poppins:wght@500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Domine&display=swap');       
 	</style>
     <title><?= ($page_title) ?></title>
 </head>

@@ -6,6 +6,9 @@
 	float:right;
 	padding-right: 30px;
 }
+.nav-cart-btn{
+	background-color: #1E8EBA;
+}
 .cart-btn{
 	border:0px;
 	margin:10px 0px;

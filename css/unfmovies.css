@@ -1,5 +1,15 @@
 body{
 	font-family: 'Open Sans', sans-serif;
+	background-color: #ecf2f9;
+}
+
+.navbar {
+	background-color: #013F70;
+}
+.navbar a{
+	color: #fff;
+}
+
 }
 
 .sm-title{

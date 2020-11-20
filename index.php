@@ -10,13 +10,13 @@
 //sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" - https://stackoverflow.com/questions/23921117/disable-only-full-group-by
 //Movie API Key https://api.themoviedb.org/3/movie/550?api_key=46ba4d9debca18872c8aa769c630aab9
 // URL: https://api.themoviedb.org/3/movie?sort_by=popularity.desc?550?api_key=46ba4d9debca18872c8aa769c630aab9
-// Google api AIzaSyCRUK4pRZzGhTAAsNJtBF7RUBmIou81jAU
+// Google api AIzaSyC6ctaf2rjK-sI61jYTUwp7ZiDfxDbbT8I
 //COMMIT: Add session start
 session_start();
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require('connector.php');
 $f3 = \Base::instance();
@@ -237,6 +237,34 @@ function calculate_user_balance($f3, $userid){
         return $outstanding_array;
 }
 
+
+function query_movie_poster($title, $date){
+    $url_query_title = str_replace(" ", "+", $title);
+    $year = new DateTime($date);
+    $year = $year->format('Y');
+
+    $url = "https://api.themoviedb.org/3/search/movie?query=".$url_query_title."&year=".$year."&api_key=46ba4d9debca18872c8aa769c630aab9&language=en-US&page=1&include_adult=false";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 80);
+
+    $response = curl_exec($ch);
+
+    if(curl_error($ch)){
+        return 'Request Error:' . curl_error($ch);
+    }
+    else
+    {
+        $obj = json_decode($response);
+        return "https://image.tmdb.org/t/p/w500".$obj->results[0]->poster_path;
+    }
+
+    curl_close($ch);
+
+}
 $f3->route('GET /movies',
     function($f3) {
         verify_login($f3);
@@ -246,6 +274,20 @@ $f3->route('GET /movies',
             update_cart($f3);
         }
         $f3->set('admin', $_SESSION['admin']);
+
+//1661, 1181, 1598, 1058, 1687, 1237, 1659, 1406
+
+        // $get_featured_movies = "SELECT * FROM movie WHERE 
+        // movie_id=1661 OR movie_id=1181 OR movie_id=1598 OR movie_id=1058 OR movie_id=1687 OR 
+        // movie_id=1237 OR movie_id=1659 OR movie_id=1406";
+
+        // $featured_movies = $f3->get('db')->exec($get_featured_movies);
+        // foreach($featured_movies as $feature){
+        //     $url = query_movie_poster($feature['title'], $feature['date_released']);
+        //     print_r("$url\n");
+        // }
+
+
 
         //General page values
     	$f3->set('page_title', 'Movies');
@@ -467,7 +509,6 @@ $f3->route('GET /movies/@movieid',
         curl_setopt($ch, CURLOPT_TIMEOUT, 80);
 
         $response = curl_exec($ch);
-        // print_r($response);
 
         if(curl_error($ch)){
             echo 'Request Error:' . curl_error($ch);
@@ -476,8 +517,6 @@ $f3->route('GET /movies/@movieid',
         {
             $obj = json_decode($response);
             $movie['image_url'] = "https://image.tmdb.org/t/p/w500".$obj->results[0]->poster_path;
-            // $movie['backdrop'] = 
-            $movie['video_url'] = "https://image.tmdb.org/t/p".$obj->results[0]->video;
         }
 
         curl_close($ch);
@@ -487,9 +526,8 @@ $f3->route('GET /movies/@movieid',
         $year = new DateTime($movie['date_released']);
         $year = $year->format('Y');
 
-        $url = "https://www.googleapis.com/youtube/v3/".urlencode("search?part=snippet&q=Sisters&key=
-AIzaSyC6ctaf2rjK-sI61jYTUwp7ZiDfxDbbT8I");
-        // print_r($url);
+        $encoded = urlencode($movie['title']);
+        $url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=$encoded&key=AIzaSyC6ctaf2rjK-sI61jYTUwp7ZiDfxDbbT8I";
         $dataArray = array();
         $ch = curl_init();
         $data = http_build_query($dataArray);
@@ -501,7 +539,6 @@ AIzaSyC6ctaf2rjK-sI61jYTUwp7ZiDfxDbbT8I");
         curl_setopt($ch, CURLOPT_TIMEOUT, 80);
 
         $response = curl_exec($ch);
-        print_r($response);
 
         if(curl_error($ch)){
             echo 'Request Error:' . curl_error($ch);
@@ -509,21 +546,17 @@ AIzaSyC6ctaf2rjK-sI61jYTUwp7ZiDfxDbbT8I");
         else
         {
             $obj = json_decode($response);
-            print_r($obj);
-            // $movie['image_url'] = "https://image.tmdb.org/t/p/w500".$obj->results[0]->poster_path;
-            // $movie['backdrop'] = 
-            // $movie['video_url'] = "https://image.tmdb.org/t/p".$obj->results[0]->video;
+            // $objs = (array)$obj;
+            // $objs = $obj->items;
+            // foreach($objs as $item){
+            //     if(strcmp($movie['title'], $item->snippet->title) < 0){
+            //         print_r($item->snippet->title);
+            //     }
+            // }
+            $movie['video'] = "https://www.youtube.com/embed/".$obj->items[0]->id->videoId;
         }
 
         curl_close($ch);
-// GET https://youtube.googleapis.com/youtube/v3/search?q=Scary%20Movie&access_token=AIzaSyCRUK4pRZzGhTAAsNJtBF7RUBmIou81jAU&key=[YOUR_API_KEY] HTTP/1.1
-
-// Authorization: Bearer [YOUR_ACCESS_TOKEN]
-// Accept: application/json
-
-
-
-
 
         $f3->set('movie', $movie);
 
@@ -1978,19 +2011,19 @@ $f3->route('POST /admin/@adminid/pricing',
     }
 );
 
-$f3->set('ONERROR',
-    function($f3){
-        verify_login($f3);
-        $f3->set('customer', $_SESSION['customer']);
-        $f3->set('admin', $_SESSION['admin']);
-        if($_SESSION['customer']){
-            update_cart($f3);
-        }
-        $f3->set('page_title', 'Page Not Found');
-        $f3->set('content', 'templates/error.htm');
-        echo \Template::instance()->render('templates/master.htm');
-    }
-);
+// $f3->set('ONERROR',
+//     function($f3){
+//         verify_login($f3);
+//         $f3->set('customer', $_SESSION['customer']);
+//         $f3->set('admin', $_SESSION['admin']);
+//         if($_SESSION['customer']){
+//             update_cart($f3);
+//         }
+//         $f3->set('page_title', 'Page Not Found');
+//         $f3->set('content', 'templates/error.htm');
+//         echo \Template::instance()->render('templates/master.htm');
+//     }
+// );
 
 //If new release, due date is 4 days. Otherwise, it is 5 days
 function calculate_due_date($release_date){

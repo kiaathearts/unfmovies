@@ -7,10 +7,11 @@
   
   color: white;
   text-align: center;
+  background-color: #013F70;
 }
 </style>
 
 <div class="mb-3"></div>
-<div class="footer bg-primary" >
+<div class="footer" >
   <address>UNF Movies</address>
 </div> 
