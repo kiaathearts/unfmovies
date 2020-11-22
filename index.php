@@ -14,9 +14,9 @@
 //COMMIT: Add session start
 session_start();
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
 require('connector.php');
 $f3 = \Base::instance();
@@ -128,6 +128,8 @@ $f3->route('GET /',
         }
         $get_user = "SELECT * FROM user WHERE user_id=".$_SESSION['userid'];
         $user = $f3->get('db')->exec($get_user)[0];
+        $genres = $f3->get('db')->exec("SELECT * FROM genre ORDER BY genre_name ASC");
+        $f3->set('genres', $genres);
         $f3->set('username', ucfirst($user['first_name']));
         $f3->set('customerid', $user['user_id']);
         $f3->set('page_title', 'Home');
@@ -2060,19 +2062,19 @@ $f3->route('POST /admin/@adminid/pricing',
     }
 );
 
-// $f3->set('ONERROR',
-//     function($f3){
-//         verify_login($f3);
-//         $f3->set('customer', $_SESSION['customer']);
-//         $f3->set('admin', $_SESSION['admin']);
-//         if($_SESSION['customer']){
-//             update_cart($f3);
-//         }
-//         $f3->set('page_title', 'Page Not Found');
-//         $f3->set('content', 'templates/error.htm');
-//         echo \Template::instance()->render('templates/master.htm');
-//     }
-// );
+$f3->set('ONERROR',
+    function($f3){
+        verify_login($f3);
+        $f3->set('customer', $_SESSION['customer']);
+        $f3->set('admin', $_SESSION['admin']);
+        if($_SESSION['customer']){
+            update_cart($f3);
+        }
+        $f3->set('page_title', 'Page Not Found');
+        $f3->set('content', 'templates/error.htm');
+        echo \Template::instance()->render('templates/master.htm');
+    }
+);
 
 //If new release, due date is 4 days. Otherwise, it is 5 days
 function calculate_due_date($release_date){
