@@ -1348,12 +1348,16 @@ function divide_by_week($rentals, $purchases, $start_date, $end_date){
     foreach ($dateRange as $date) { 
         $weeks[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
             $value_date = $value['rental_datetime'];
-            
             $value_date = new DateTime($value_date);
-            $date_limit = new DateTime($date->format('Y-m-d'));
-            $date_limit = $date_limit->add(new DateInterval('P7D'));
+            $date_limit = $date;
 
-            return $value_date>$date && $value_date<$date_limit;
+            $cweek = $value_date->format('W');
+            $dlimitweek = $date_limit->format('W');
+
+            $cyear = $value_date->format('Y');
+            $dlimityear = $date_limit->format('Y');
+
+            return ($cweek == $dlimitweek) && ($cyear == $dlimityear);
         });
     }
 
@@ -1362,11 +1366,14 @@ function divide_by_week($rentals, $purchases, $start_date, $end_date){
             $value_date = $value['purchase_datetime'];
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($week_date);
-            $date_limit = $date_limit->add(new DateInterval('P7D'));
 
-            $above = $value_date> new DateTime($week_date);
-            $below =  $value_date<$date_limit;
-            return $value_date>$date && $value_date<$date_limit;           
+            $cweek = $value_date->format('W');
+            $dlimitweek = $date_limit->format('W');
+
+            $cyear = $value_date->format('Y');
+            $dlimityear = $date_limit->format('Y');
+
+            return ($cweek == $dlimitweek) && ($cyear == $dlimityear);
         });
     }
     
@@ -1404,10 +1411,12 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
         $months[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
             $value_date = $value['rental_datetime'];
             $value_date = new DateTime($value_date);
-            $date_limit = new DateTime($date->format('Y-m-d'));
-            $date_limit = $date_limit->add(new DateInterval('P1M'));
+            $date_limit = $date;
 
-            return $value_date>$date && $value_date<$date_limit;
+            $cmonth = $value_date->format('m');
+            $dlimitmonth = $date_limit->format('m');
+
+            return $cmonth == $dlimitmonth;
         });
     }
 
@@ -1417,9 +1426,11 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
             $value_date = $value['purchase_datetime'];
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($month_date);
-            $date_limit = $date_limit->add(new DateInterval('P1M'));
 
-            return $value_date>$month_date && $value_date<=$date_limit;           
+            $cmonth = $value_date->format('m');
+            $dlimitmonth = $date_limit->format('m');
+
+            return $cmonth == $dlimitmonth;
         });
     }
 
@@ -1434,6 +1445,7 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
         foreach($value['purchases'] as $purchase){
             $monthly_purchase_total += $purchase['payment_amount'];
         }
+
 
         $months[$month_key] = [];
         $months[$month_key]['rentals']['rental_sum'] = $monthly_rental_total;
@@ -1453,12 +1465,13 @@ function divide_by_year($rentals, $purchases, $start_date, $end_date){
     foreach ($dateRange as $date) { 
         $years[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
             $value_date = $value['rental_datetime'];
-            
             $value_date = new DateTime($value_date);
-            $date_limit = new DateTime($date->format('Y-m-d'));
-            $date_limit = $date_limit->add(new DateInterval('P1Y'));
+            $date_limit = $date;
 
-            return $value_date>$date && $value_date<$date_limit;
+            $cyear = $value_date->format('Y');
+            $dlimityear = $date_limit->format('Y');
+
+            return $cyear == $dlimityear;
         });
     }
     foreach($years as $year_date=>$values){
@@ -1466,11 +1479,11 @@ function divide_by_year($rentals, $purchases, $start_date, $end_date){
             $value_date = $value['purchase_datetime'];
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($year_date);
-            $date_limit = $date_limit->add(new DateInterval('P1Y'));
 
-            $above = $value_date> new DateTime($year_date);
-            $below =  $value_date<$date_limit;
-            return $value_date>$date && $value_date<$date_limit;           
+            $cyear = $value_date->format('Y');
+            $dlimityear = $date_limit->format('Y');
+
+            return $cyear == $dlimityear;
         });
     }
     foreach($years as $year_key=>$value){
