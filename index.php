@@ -2077,37 +2077,42 @@ $f3->route('POST /admin/@adminid/pricing',
         //Mass update standard and new release rental prices
         $standard = $standard/5;
         $new_release = $new_release/4;
-        $set_movie_standard_rental_prices = "UPDATE movie SET
+
+        $set_standard_movie_price = "UPDATE movie SET
         digital_rental=".$standard.",
-        new_release_digital_rental=".$new_release.",
         vhs_rental=".$standard.",
-        new_release_vhs_rental=".$new_release.",
         dvd_rental=".$standard.",
+        bluray_rental=".$standard;
+
+        $set_new_release_movie_price = "UPDATE movie SET
+        new_release_digital_rental=".$new_release.",
+        new_release_vhs_rental=".$new_release.",
         new_release_dvd_rental=".$new_release.",
-        bluray_rental=".$standard.",
         new_release_bluray_rental=".$new_release;
-        $f3->get('db')->exec($set_movie_standard_rental_prices);
+
 
 
         //Update everything
         if(trim($standard)!= ""){
-            $prices_set = $f3->get('db')->exec($set_standard_price);
-
+            $f3->get('db')->exec($set_standard_price);
+            $f3->get('db')->exec($set_standard_movie_price);
+            $f3->set('standard_price', $_POST['standard']);
         }
         if(trim($new_release)!=""){
-            $prices_set = $f3->get('db')->exec($set_new_release_price);
+            $f3->get('db')->exec($set_new_release_price);
+            $f3->get('db')->exec($set_new_release_movie_price);
+            $f3->set('new_release_price', $_POST['new_release']);
+            // print_r($prices_set);
         }
 
-        $get_prices = "SELECT * FROM pricing";
-        $prices = $f3->get('db')->exec($get_prices);
+        // $get_prices = "SELECT * FROM pricing";
+        // $prices = $f3->get('db')->exec($get_prices);
 
-        $costs = [];
-        foreach($prices as $price){
-            $cost[$price['name']] = $price['price'];
-        }
+        // $costs = [];
+        // foreach($prices as $price){
+        //     $cost[$price['name']] = $price['price'];
+        // }
 
-        $f3->set('new_release_price', $cost['new_release']);
-        $f3->set('standard_price', $cost['standard']);
 
         $f3->set('content', 'templates/pricing.htm');
         echo \Template::instance()->render('templates/master.htm');
@@ -2463,6 +2468,7 @@ $f3->route('POST /movies/cart/add/@movieid',
                 $rental_period = 5;
             }
             $price = $movie[$cost_type];
+            print_r($price);
             $cost = $price * $rental_period;
         } 
 
