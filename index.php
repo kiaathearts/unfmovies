@@ -14,9 +14,9 @@
 //COMMIT: Add session start
 session_start();
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require('connector.php');
 $f3 = \Base::instance();
@@ -299,7 +299,7 @@ $f3->route('GET /movies',
 
         $grouped_movies = array();
         foreach($genres as $genre){
-            $grouped_movies[$genre['genre_name']] = $f3->get('db')->exec("SELECT * FROM movie WHERE genre_id=".$genre['genre_id']." ORDER BY date_released DESC"); 
+            $grouped_movies[$genre['genre_name']] = $f3->get('db')->exec("SELECT * FROM movie WHERE genre_id=".$genre['genre_id']." ORDER BY movie.title ASC"); 
             foreach($grouped_movies[$genre['genre_name']] as $key=>$movie){
                 $release_date = $movie['date_released'];
                 $grouped_movies[$genre['genre_name']][$key]['new_release'] = is_new_release($release_date);
@@ -402,7 +402,7 @@ $f3->route('POST /movies/query',
                     ON movie_actor.movie_movie_id = movie.movie_id
                 JOIN actor
                     ON actor.actor_id = movie_actor.actor_actor_id
-                GROUP BY movie.movie_id ORDER BY date_released DESC";
+                GROUP BY movie.movie_id ORDER BY movie.title ASC";
             $f3->set('movies', $f3->get('db')->exec($movies_query));
         }
 
@@ -561,10 +561,7 @@ $f3->route('GET /movies/@movieid',
 
         $encoded = urlencode($movie['title']);
         $url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=$encoded&key=AIzaSyC6ctaf2rjK-sI61jYTUwp7ZiDfxDbbT8I";
-        $dataArray = array();
         $ch = curl_init();
-        $data = http_build_query($dataArray);
-        $getUrl = $url."?".$data;
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -579,7 +576,14 @@ $f3->route('GET /movies/@movieid',
         else
         {
             $obj = json_decode($response);
-            $movie['video'] = "https://www.youtube.com/embed/".$obj->items[0]->id->videoId;
+            if(!$obj->error->code){
+                foreach($obj->items as $item){
+                    if($item->snippet->channelTitle=="Movieclips"){
+                        $movie['video'] = "https://www.youtube.com/embed/".$item->id->videoId;
+                        break;
+                    }
+                }
+            }
         }
 
         curl_close($ch);
@@ -598,10 +602,10 @@ $f3->route('GET /movies/@movieid',
         $reviews = $f3->get('db')->exec($get_reviews);
 
         //Cast members
-        $get_cast = "SELECT * FROM movie 
-        JOIN movie_actor ON movie.movie_id=movie_actor.movie_movie_id 
+        $get_cast = "SELECT * FROM movie_actor 
+        -- JOIN movie_actor ON movie.movie_id=movie_actor.movie_movie_id 
         JOIN actor ON actor.actor_id=movie_actor.actor_actor_id 
-        WHERE movie.movie_id=".$movie['movie_id'];
+        WHERE movie_actor.movie_movie_id=".$movie['movie_id'];
         $cast = $f3->get('db')->exec($get_cast);
         $cast_string = '';
         foreach($cast as $member){
@@ -2041,19 +2045,19 @@ $f3->route('POST /admin/@adminid/pricing',
     }
 );
 
-$f3->set('ONERROR',
-    function($f3){
-        verify_login($f3);
-        $f3->set('customer', $_SESSION['customer']);
-        $f3->set('admin', $_SESSION['admin']);
-        if($_SESSION['customer']){
-            update_cart($f3);
-        }
-        $f3->set('page_title', 'Page Not Found');
-        $f3->set('content', 'templates/error.htm');
-        echo \Template::instance()->render('templates/master.htm');
-    }
-);
+// $f3->set('ONERROR',
+//     function($f3){
+//         verify_login($f3);
+//         $f3->set('customer', $_SESSION['customer']);
+//         $f3->set('admin', $_SESSION['admin']);
+//         if($_SESSION['customer']){
+//             update_cart($f3);
+//         }
+//         $f3->set('page_title', 'Page Not Found');
+//         $f3->set('content', 'templates/error.htm');
+//         echo \Template::instance()->render('templates/master.htm');
+//     }
+// );
 
 //If new release, due date is 4 days. Otherwise, it is 5 days
 function calculate_due_date($release_date){

@@ -2,13 +2,11 @@
   <?php if ($admin): ?>
     
       <a class="navbar-brand" style="width:150px; height: 105px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/admin">
-        <!-- <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt=""> -->
         <img src="/images/unfmoviesangle.png" style="width: 70%; height: auto; margin: 4% 0 0 0;" alt="">
       </a>
     
     <?php else: ?>
       <a class="navbar-brand" style="width:150px; height: 105px; overflow: hidden; display:block; padding: 0; margin: -1% 12px -1% -1%;" href="/">
-          <!-- <img src="/images/unfmovies_logo.png" style="width: 100%; height: auto; margin: 7% 0 0 0;" alt=""> -->
           <img src="/images/unfmoviesangle.png" style="width: 70%; height: auto; margin: 4% 0 0 0;" alt="">
         </a>
     
@@ -16,13 +14,15 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <?php if ($admin): ?>
       
-        <a class="nav-link" href="/admin/title">Title</a>      
-        <a class="nav-link" href="/admin/customer">Customer</a>      
-        <a class="nav-link" href="/admin/reports/title">Reports by Title</a>      
-        <a class="nav-link" href="/admin/reports/genre">Reports by Genre</a>      
-        <a class="nav-link" href="/admin/<?= ($SESSION['employee_id']) ?>/pricing">Pricing</a>      
+        <a class="nav-link" href="/admin/title">Locate Title/Update Inventory</a> |
+        <a class="nav-link" href="/admin/movie/add">Add New Movie</a> |     
+        <a class="nav-link" href="/admin/customer">Check Customer Balance</a> |      
+        <a class="nav-link" href="/admin/reports/title">Reports by Title</a> |     
+        <a class="nav-link" href="/admin/reports/genre">Reports by Genre</a> |     
+        <a class="nav-link" href="/admin/<?= ($SESSION['employee_id']) ?>/pricing">Adjust Pricing</a> |   
       
       <?php else: ?>
+        <a class="nav-link" href="/">Movies</a> |
         <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Return Rentals</a> |     
         <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Check and <br/> Pay Balance</a> |     
         <a class="nav-link" href="/invoices/<?= ($SESSION['userid']) ?>">Invoices</a>      
@@ -31,10 +31,8 @@
   </div>
     <?php if ($customer): ?>
       <ul style="list-style-type: none; margin-top: 1%;">
-          <!-- <a class="nav-link" href="/movies" style="display: inline">Search Movies</a> -->
           <li class="nav-item dropdown">
             <a class="nav-link" href="/profile/<?= ($SESSION['userid']) ?>">Hello, <?= (ucfirst($SESSION['first_name'])) ?><br/><span style="margin-left: 35px">Profile</span></a>
-<!--             <a class="nav-link dropdown-toggle" style="display: inline" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Account</a> -->
             <div class="dropdown-menu">
             </div>
         </li>
@@ -43,14 +41,14 @@
       <!---------------------------------------Cart------------------------------------------->
     	<div class="dropdown">
         <button type="button" class="btn nav-cart-btn" data-toggle="dropdown">
-          <i class="fa fa-shopping-cart" aria-hidden="true"></i> Cart <span class="badge badge-pill badge-danger"><?= ($cart->count()) ?></span>
+          <i class="fa fa-shopping-cart" aria-hidden="true"></i> Cart <span class="badge badge-pill badge-primary"><?= ($cart->count()) ?></span>
         </button>
         <div class="dropdown-menu">
         	<div class="row total-header-section">
       			<div class="col-lg-6 col-sm-5 col-5">
       				<i class="fa fa-shopping-cart" aria-hidden="true"></i> <span class="badge badge-pill badge-danger"><?= ($cart->count())."
 " ?>
-              </span>
+              </span> 
               <?php if ($SESSION['balance'] > 0): ?>
                 <p>You have a balance of <?= ($balance) ?>, that must be paid before you can make any more purchases or checkout rentals. Please, visit your profile and resolve your balance.</p>
               <?php endif; ?>
@@ -58,6 +56,9 @@
       			<div class="col-lg-5 col-sm-5 col-5 total-section text-right">
       				<p>Total: <span class="text-info">$<?= ($cart_total_cost) ?></span></p>
       			</div>
+            <div class="col col-12">
+              <a href="/movies/cart/empty" >Empty Cart</a>
+            </div>
       	 </div>
         <?php foreach (($cart->find()?:[]) as $cart_item): ?>
           <div class="row cart-detail">
@@ -84,11 +85,8 @@
         <?php if ($cart->count() > 0): ?>
           <div class="row">
             <div class="col-lg-12 col-sm-12 col-12 text-center checkout">
-              <span class="align-text-bottom"><a class="cart-btn btn-primary btn-block" href="/checkout/<?= ($SESSION['userid']) ?>">Proceed to Checkout</a></span>
+              <a class="btn btn-block" style="background-color: #007bff; color: #fff" href="/checkout/<?= ($SESSION['userid']) ?>">Proceed to Checkout</a>
             </div>
-          </div>
-          <div class="row total-header-section">
-              <a href="/movies/cart/empty" class="cart-btn">Empty Cart</a>
           </div>
         <?php endif; ?>
         <?php if ($cart->count() == 0): ?>

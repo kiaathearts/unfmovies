@@ -1,4 +1,9 @@
-<div class="container">
+<div class="container" style="margin-bottom: 200px;">
+  <div class="row mb-2">
+    <div class="col">
+      <p class="display-4">Checkout</p>
+    </div>
+  </div>
 	<div class="col-lg-5 col-sm-5 col-5">
     <check if="{{ @SESSION['balance'] > 0 }}">
       <true><p>You have a balance of {{ @balance }}, that must be paid before you can make any more purchases or checkout rentals. Please, visit your profile and resolve your balance.</p></true>
@@ -20,7 +25,7 @@
       </div>
     </div>
   </repeat>
-  	<div class="col-lg-5 col-sm-5 col-5 total-section text-right">
+  	<div class="col-lg-5 col-sm-5 col-5 total-section text-left">
   		<p class="h2">Total: <span class="text-info">${{ @cart_total_cost }}</span></p>
   	</div>
   <check if="{{ @cart->count() > 0}}">
