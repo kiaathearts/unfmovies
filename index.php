@@ -14,9 +14,9 @@
 //COMMIT: Add session start
 session_start();
 
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require('connector.php');
 $f3 = \Base::instance();
@@ -408,7 +408,6 @@ $f3->route('POST /movies/query',
             $f3->set('movies', $f3->get('db')->exec($movies_query));
         }
 
-        // print_r($f3->get('movies'));
         //Filter movies
         $filtered_movies = array_filter($f3->get('movies'), function($movie){
             $count = 0;
@@ -1149,6 +1148,7 @@ $f3->route('GET /admin/reports/title',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Title Reports');
+        $f3->set('genres', $f3->get('db')->exec("SELECT * FROM genre ORDER BY genre_name ASC"));
         $f3->set('found', true);
         $f3->set('content', 'templates/reports_title.htm');
 
@@ -1164,7 +1164,7 @@ $f3->route('GET /admin/reports/title/@movieid',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Title Report');
-
+        $f3->set('genres', $f3->get('db')->exec("SELECT * FROM genre ORDER BY genre_name ASC"));
 
         //Gather all rental invoices for the movie
         $rental_invoices = [];
@@ -1176,7 +1176,7 @@ $f3->route('GET /admin/reports/title/@movieid',
         WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
 
         $movie_rental_instances = $f3->get('db')->exec($movie_rental_query);
-        $exe1 = $f3->set('movie_title', $movie_rental_instances[0]['title']);
+        $f3->set('movie_title', $movie_rental_instances[0]['title']);
 
         $f3->set('found', true);
 
@@ -1204,9 +1204,9 @@ $f3->route('GET /admin/reports/title/@movieid',
         $total_purchases = 0;
         $movies_purchased = [];
         foreach($movie_purchase_instances as $movie){
-            $total_purchases += $result['payment_amount'];
+            $total_purchases += $movie['payment_amount'];
         }
-
+        
         $f3->set('total_purchases', $total_purchases);
         $totals_rental_purchase = $total_purchases + $total_rentals + $total_rental_fees;
         $f3->set('totals_rental_purchase', $totals_rental_purchase);
@@ -1322,13 +1322,15 @@ $f3->route('GET /admin/reports/genre',
 
 function divide_by_week($rentals, $purchases, $start_date, $end_date){
     $interval = new DateInterval('P1W');
+    $d_position = $end_date->format('N');
+    $days = 8-$d_position;
+    $end_date = $end_date->add(new DateInterval("P".$days."D"));
     $dateRange = new DatePeriod($start_date, $interval, $end_date);
 
     $weeks = array();
     foreach ($dateRange as $date) { 
         $weeks[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
             $value_date = $value['rental_datetime'];
-            //TODO: Calculate returned purchases
             
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($date->format('Y-m-d'));
@@ -1340,7 +1342,6 @@ function divide_by_week($rentals, $purchases, $start_date, $end_date){
     foreach($weeks as $week_date=>$values){
         $weeks[$week_date]['purchases'] = array_filter($purchases, function($value) use($week_date){
             $value_date = $value['purchase_datetime'];
-            //TODO: Calculate returned purchases
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($week_date);
             $date_limit = $date_limit->add(new DateInterval('P7D'));
@@ -1376,13 +1377,14 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
     $month = $start_date->format('m');
     $year = $start_date->format('Y');
     $start_date = new DateTime($year."-".$month."-01");
+    $end_date = new DateTime($end_date->format('Y-m-t'));
     $dateRange = new DatePeriod($start_date, $interval, $end_date);
 
+    //Generate an array, keyed by date
     $months = array();
     foreach ($dateRange as $date) { 
         $months[$date->format('Y-m-d')]['rentals'] = array_filter($rentals, function($value) use($date){
             $value_date = $value['rental_datetime'];
-            
             $value_date = new DateTime($value_date);
             $date_limit = new DateTime($date->format('Y-m-d'));
             $date_limit = $date_limit->add(new DateInterval('P1M'));
@@ -1390,6 +1392,8 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
             return $value_date>$date && $value_date<$date_limit;
         });
     }
+
+    //Place values into array
     foreach($months as $month_date=>$values){
         $months[$month_date]['purchases'] = array_filter($purchases, function($value) use($month_date){
             $value_date = $value['purchase_datetime'];
@@ -1397,14 +1401,13 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
             $date_limit = new DateTime($month_date);
             $date_limit = $date_limit->add(new DateInterval('P1M'));
 
-            $above = $value_date> new DateTime($month_date);
-            $below =  $value_date<$date_limit;
-            return $value_date>$date && $value_date<$date_limit;           
+            return $value_date>$month_date && $value_date<=$date_limit;           
         });
     }
 
     foreach($months as $month_key=>$value){
         $monthly_rental_total = 0;
+        $monthly_purchase_total = 0;
         foreach($value['rentals'] as $rental){
             $monthly_rental_total += $rental['payment_amount'];
         }
@@ -1419,7 +1422,6 @@ function divide_by_month($rentals, $purchases, $start_date, $end_date){
         $months[$month_key]['purchases']['purchase_sum'] = $monthly_purchase_total;
         $months[$month_key]['total'] = $monthly_rental_total + $monthly_purchase_total;
     }
-
     return array_reverse($months);
 }
 
@@ -1489,10 +1491,16 @@ $f3->route('POST /admin/reports/genre',
 
         //Gather all rental invoices for the genre
         $rental_invoices = [];
-        $movie_rental_query = "SELECT * FROM movie 
-        JOIN inventory ON movie.movie_id=inventory.movie_id 
-        JOIN rental ON rental.inventory_id=inventory.inventory_id 
-        JOIN bill ON bill.transaction_id=rental.transaction_id 
+        // $movie_rental_query = "SELECT * FROM movie 
+        // JOIN inventory ON movie.movie_id=inventory.movie_id 
+        // JOIN rental ON rental.inventory_id=inventory.inventory_id 
+        // JOIN bill ON bill.transaction_id=rental.transaction_id 
+        // JOIN invoice ON invoice.invoice_id=bill.invoice_id
+        // WHERE movie.genre_id=".$genreid;
+        $movie_rental_query = "SELECT * FROM bill
+        JOIN rental ON rental.transaction_id=bill.transaction_id
+        JOIN inventory ON inventory.inventory_id=rental.inventory_id
+        JOIN movie ON inventory.movie_id=movie.movie_id
         JOIN invoice ON invoice.invoice_id=bill.invoice_id
         WHERE movie.genre_id=".$genreid;
 
@@ -1504,8 +1512,8 @@ $f3->route('POST /admin/reports/genre',
 
         if(trim($to_date) != ""){
             $compare = new DateTime($to_date);
-            $compare = $compare->format('Y-m-d H:i:s');
-            $movie_rental_query .=" AND rental.rental_datetime<'".$compare."'";
+            $compare = $compare->format('Y-m-t');
+            $movie_rental_query .=" AND rental.rental_datetime<='".$compare."'";
         }
 
         $movie_rental_instances = $f3->get('db')->exec($movie_rental_query);
@@ -1532,28 +1540,45 @@ $f3->route('POST /admin/reports/genre',
         $f3->set('total_rental_fees', $total_rental_fees);
 
         //Gather all purchase information for genre
+        // JOIN bill ON bill.transaction_id=purchase.transaction_id 
+        // -- JOIN transaction ON transaction.transaction_id=bill.transaction_id
+        // JOIN invoice ON invoice.invoice_id=bill.invoice_id
         $purchase_invoices = [];
-        $movie_purchase_query = "SELECT * FROM movie 
-        JOIN inventory ON movie.movie_id=inventory.movie_id 
-        JOIN purchase ON purchase.inventory_id=purchase.inventory_id 
-        JOIN bill ON bill.transaction_id=purchase.transaction_id 
-        JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        // $movie_purchase_query = "SELECT * FROM bill 
+        // JOIN purchase ON purchase.transaction_id=bill.transaction_id
+        // JOIN inventory ON inventory.inventory_id=purchase.inventory_id
+        // JOIN movie ON inventory.movie_id=movie.movie_id
+        // WHERE movie.genre_id=".$genreid;
+
+        $movie_purchase_query = "SELECT * FROM bill
+        JOIN purchase ON purchase.transaction_id=bill.transaction_id
+        JOIN inventory ON inventory.inventory_id=purchase.inventory_id
+        JOIN movie ON inventory.movie_id=movie.movie_id
+        JOIN invoice ON invoice.invoice_id=bill.invoice_id
         WHERE movie.genre_id=".$genreid;
 
         if(trim($from_date) != ""){
             $compare = new DateTime($from_date);
             $compare = $compare->format('Y-m-d H:i:s');
             $movie_purchase_query .=" AND purchase.purchase_datetime>'".$compare."'";
+
         }
 
         if(trim($to_date) != ""){
             $compare = new DateTime($to_date);
-            $compare = $compare->format('Y-m-d H:i:s');
-            $movie_purchase_query .=" AND purchase.purchase_datetime<'".$compare."'";
+            if($interval == 'weekly'){
+                $d_position = $compare->format('N');
+                $days = 8-$d_position;
+                $compare = $compare->add(new DateInterval("P".$days."D"));
+                $compare = $compare->format('Y-m-d');
+            }else{
+                $compare = $compare->format('Y-m-t');
+            }
+            $movie_purchase_query .=" AND purchase.purchase_datetime<='".$compare."'";
         }
 
         $movie_purchase_instances = $f3->get('db')->exec($movie_purchase_query);
-        
+
         $total_purchases = 0;
         if(!empty($movie_purchase_instances)){
             foreach($movie_purchase_instances as $movie){
@@ -1587,7 +1612,6 @@ $f3->route('POST /admin/reports/genre',
                 $f3->set('interval', 'Year');
             break;
         }
-
         $f3->set('total_purchases', $total_purchases);
 
         $totals_rental_purchase = $total_purchases + $total_rentals + $total_rental_fees;
@@ -2062,19 +2086,19 @@ $f3->route('POST /admin/@adminid/pricing',
     }
 );
 
-$f3->set('ONERROR',
-    function($f3){
-        verify_login($f3);
-        $f3->set('customer', $_SESSION['customer']);
-        $f3->set('admin', $_SESSION['admin']);
-        if($_SESSION['customer']){
-            update_cart($f3);
-        }
-        $f3->set('page_title', 'Page Not Found');
-        $f3->set('content', 'templates/error.htm');
-        echo \Template::instance()->render('templates/master.htm');
-    }
-);
+// $f3->set('ONERROR',
+//     function($f3){
+//         verify_login($f3);
+//         $f3->set('customer', $_SESSION['customer']);
+//         $f3->set('admin', $_SESSION['admin']);
+//         if($_SESSION['customer']){
+//             update_cart($f3);
+//         }
+//         $f3->set('page_title', 'Page Not Found');
+//         $f3->set('content', 'templates/error.htm');
+//         echo \Template::instance()->render('templates/master.htm');
+//     }
+// );
 
 //If new release, due date is 4 days. Otherwise, it is 5 days
 function calculate_due_date($release_date){
