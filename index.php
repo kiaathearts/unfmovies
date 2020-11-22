@@ -1165,18 +1165,26 @@ $f3->route('GET /admin/reports/title/@movieid',
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Title Report');
         $f3->set('genres', $f3->get('db')->exec("SELECT * FROM genre ORDER BY genre_name ASC"));
+        $get_movie_title = "SELECT * FROM movie WHERE movie_id=".$f3->get('PARAMS.movieid');
+        $f3->set('movie_title', $f3->get('db')->exec($get_movie_title));
 
-        //Gather all rental invoices for the movie
+        //Gather all rental invoices for the movie3
         $rental_invoices = [];
-        $movie_rental_query = "SELECT * FROM movie 
-        LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
-        LEFT JOIN rental ON rental.inventory_id=inventory.inventory_id 
-        LEFT JOIN bill ON bill.transaction_id=rental.transaction_id 
-        LEFT JOIN invoice ON invoice.invoice_id=bill.invoice_id 
-        WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
+        // $movie_rental_query = "SELECT * FROM movie 
+        // LEFT JOIN inventory ON movie.movie_id=inventory.movie_id 
+        // LEFT JOIN rental ON rental.inventory_id=inventory.inventory_id 
+        // LEFT JOIN bill ON bill.transaction_id=rental.transaction_id 
+        // LEFT JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        // WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
+
+        $movie_rental_query = "SELECT * FROM bill
+        JOIN rental ON rental.transaction_id=bill.transaction_id
+        JOIN inventory ON inventory.inventory_id=rental.inventory_id
+        JOIN movie ON inventory.movie_id=movie.movie_id
+        JOIN invoice ON invoice.invoice_id=bill.invoice_id
+        WHERE movie.movie_id=".$f3->get('PARAMS.movieid');
 
         $movie_rental_instances = $f3->get('db')->exec($movie_rental_query);
-        $f3->set('movie_title', $movie_rental_instances[0]['title']);
 
         $f3->set('found', true);
 
@@ -1192,12 +1200,19 @@ $f3->route('GET /admin/reports/title/@movieid',
 
         //Gather all purchase information for movie
         $purchase_invoices = [];
-        $movie_purchase_query = "SELECT * FROM movie 
-        INNER JOIN inventory ON movie.movie_id=inventory.movie_id 
-        INNER JOIN purchase ON purchase.inventory_id=purchase.inventory_id 
-        INNER JOIN bill ON bill.transaction_id=purchase.transaction_id 
-        INNER JOIN invoice ON invoice.invoice_id=bill.invoice_id 
-        WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
+        // $movie_purchase_query = "SELECT * FROM movie 
+        // INNER JOIN inventory ON movie.movie_id=inventory.movie_id 
+        // INNER JOIN purchase ON purchase.inventory_id=purchase.inventory_id 
+        // INNER JOIN bill ON bill.transaction_id=purchase.transaction_id 
+        // INNER JOIN invoice ON invoice.invoice_id=bill.invoice_id 
+        // WHERE movie.movie_id=".$f3->get('PARAMS.movieid')." GROUP BY invoice.invoice_id";
+
+        $movie_purchase_query = "SELECT * FROM bill
+        JOIN purchase ON purchase.transaction_id=bill.transaction_id
+        JOIN inventory ON inventory.inventory_id=purchase.inventory_id
+        JOIN movie ON inventory.movie_id=movie.movie_id
+        JOIN invoice ON invoice.invoice_id=bill.invoice_id
+        WHERE movie.movie_id=".$f3->get('PARAMS.movieid');
 
         $movie_purchase_instances = $f3->get('db')->exec($movie_purchase_query);
         
@@ -1206,7 +1221,10 @@ $f3->route('GET /admin/reports/title/@movieid',
         foreach($movie_purchase_instances as $movie){
             $total_purchases += $movie['payment_amount'];
         }
-        
+        // echo "<pre>";
+        // print_r($movie['payment_amount']);
+        // echo "</pre>";
+        // print_r($total_purchases);
         $f3->set('total_purchases', $total_purchases);
         $totals_rental_purchase = $total_purchases + $total_rentals + $total_rental_fees;
         $f3->set('totals_rental_purchase', $totals_rental_purchase);
@@ -1540,9 +1558,6 @@ $f3->route('POST /admin/reports/genre',
         $f3->set('total_rental_fees', $total_rental_fees);
 
         //Gather all purchase information for genre
-        // JOIN bill ON bill.transaction_id=purchase.transaction_id 
-        // -- JOIN transaction ON transaction.transaction_id=bill.transaction_id
-        // JOIN invoice ON invoice.invoice_id=bill.invoice_id
         $purchase_invoices = [];
         // $movie_purchase_query = "SELECT * FROM bill 
         // JOIN purchase ON purchase.transaction_id=bill.transaction_id
