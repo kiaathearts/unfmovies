@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" style="margin-bottom: 50px">
 	<div class="row mb-3">
 		<div class="col">
 			<p class="h1">Customer Search</p>
@@ -49,29 +49,43 @@
 					<?php endforeach; ?>
 				
 				<?php else: ?>
-					<h4 class="mt-3">No Rentals Due for Return</h4>
+					<?php if ($found): ?>
+						<h4 class="mt-3">No Rentals Due for Return</h4>
+					<?php endif; ?>
 				
 			<?php endif; ?>
-			<div class="row mb-3">
-				<div class="col">
-					<h4><strong>Balance: $<?= ($balance) ?></strong></h4>
-				</div>
-			</div>
-			<div>
-				<h4><strong>Eligible Purchase Returns</strong></h4>
-					<?php foreach (($purchases?:[]) as $purchase): ?>
-						<div class="row">
-							<div class="col">
-								<h4><a href="/admin/return_purchase/<?= ($purchase['bill_id']) ?>"><?= ($purchase['title']) ?> (<?= ($purchase['inventory_type']) ?>)</a></h4>
-							</div>
+			<?php if ($found): ?>
+				
+					<div class="row mb-3">
+						<div class="col">
+							<h4><strong>Balance: $<?= ($balance) ?></strong></h4>
 						</div>
-					<?php endforeach; ?>
-			</div>
-			<div class="row">
-				<div class="col" style="margin-bottom: 50px">
-					<a href="/admin/resolve/customer/<?= ($customerid) ?>" class="btn btn-info my-2 my-sm-0" type="submit">Resolve Balance</a>
-				</div>
-			</div>	
+					</div>
+					<div>
+						<h4><strong>Eligible Purchase Returns</strong></h4>
+							<?php foreach (($purchases?:[]) as $purchase): ?>
+								<div class="row">
+									<div class="col">
+										<h4><a href="/admin/return_purchase/<?= ($purchase['bill_id']) ?>"><?= ($purchase['title']) ?> (<?= ($purchase['inventory_type']) ?>)</a></h4>
+									</div>
+								</div>
+							<?php endforeach; ?>
+					</div>
+					<div class="row">
+						<div class="col" style="margin-bottom: 50px">
+							<a href="/admin/resolve/customer/<?= ($customerid) ?>" class="btn btn-info my-2 my-sm-0" type="submit">Resolve Balance</a>
+						</div>
+					</div>	
+				
+				<?php else: ?>
+					<p class="h1">The customer <?= ($email) ?> could not be found. Please try searching again</p>
+						<div class="row">
+						<div class="col" style="margin-bottom: 50px">
+							<a href="/admin/customer" class="btn btn-info my-2 my-sm-0" type="submit">Back to Search</a>
+						</div>
+					</div>	
+				
+			<?php endif; ?>
 		
 		<?php else: ?>
 			<div class="row mb-3">

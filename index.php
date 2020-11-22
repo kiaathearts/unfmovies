@@ -1028,11 +1028,17 @@ $f3->route('POST /admin/@movieid/edit',
             case "delete":
                 $get_movie_title = "SELECT title FROM movie WHERE movie_id=".$movieid;
                 $movie_title = $f3->get('db')->exec($get_movie_title)[0]['title'];
-                $delete_movie_inventory = "DELETE FROM inventory WHERE movie_id=".$movieid;
+
+                //Remove movie from inventory table
+                $delete_movie_inventory = "SET FOREIGN_KEY_CHECKS=0;
+                DELETE FROM inventory WHERE movie_id=".$movieid.";
+                SET FOREIGN_KEY_CHECKS=1;";
                 $f3->get('db')->exec($delete_movie_inventory);
 
+                //Remove movie from movie table
                 $delete_movie = "DELETE FROM movie WHERE movie_id=".$movieid;
                 $f3->get('db')->exec($delete_movie);
+
                 $reroute = "admin/movie/delete_confirm/".$movie_title;
                 $f3->reroute($reroute);
 
@@ -1657,65 +1663,74 @@ $f3->route('POST /admin/customer',
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'View Customer');
+        $f3->set('content', 'templates/customer.htm');
         
         $customer_email = $_POST['email'];
         $f3->set('username', $customer_email);
 
         $customer_query = "SELECT * FROM user WHERE email='".$customer_email."'";
         $customer = $f3->get('db')->exec($customer_query);
-        $customerid = $customer[0]['user_id'];
-        $f3->set('customerid', $customerid);
+        if(empty($customer)){
+            // $f3->set('username', false);
+            $f3->set('outstandings', array());
+            $f3->set('rentals', array());
+            $f3->set('email', $customer_email);
+            $f3->set('found', false);
+            // $f3->reroute('/admin/customer');
+        }else{
+            $f3->set('found', true);
+            $customerid = $customer[0]['user_id'];
+            $f3->set('customerid', $customerid);
 
-        $outstandings = calculate_user_balance($f3, $customerid);
-        $f3->set('admin', $_SESSION['admin']);
-        $f3->set('content', 'templates/customer.htm');
+            $outstandings = calculate_user_balance($f3, $customerid);
 
-        $balance = 0;
-        foreach($outstandings as $key=>$rental){
-            if(trim($rental['fees']) != ""){
-                $balance += $rental['fees'];
+            $balance = 0;
+            foreach($outstandings as $key=>$rental){
+                if(trim($rental['fees']) != ""){
+                    $balance += $rental['fees'];
+                }
+                $release_date = $rental['date_released'];
+                $date_rented = $rental['rental_datetime'];
+                $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 4 : 5;
+                $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
             }
-            $release_date = $rental['date_released'];
-            $date_rented = $rental['rental_datetime'];
-            $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 4 : 5;
-            $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
+
+            $date = new DateTime();
+            $date = $date->format('Y-m-d');
+
+            $query_eligible_purchases = "SELECT * FROM bill 
+            JOIN transaction ON bill.transaction_id=transaction.transaction_id
+            JOIN purchase ON purchase.transaction_id=transaction.transaction_id
+            JOIN inventory ON inventory.inventory_id=purchase.inventory_id 
+            JOIN movie ON movie.movie_id=inventory.movie_id
+            WHERE bill.user_id=".$customerid." AND return_end >'".$date."' 
+            AND return_datetime IS NULL";
+
+
+            $purchases = $f3->get('db')->exec($query_eligible_purchases);
+            $f3->set('purchases', $purchases);
+
+            $get_checked_out_movies = "SELECT * FROM transaction 
+            JOIN rental ON transaction.transaction_id=rental.transaction_id 
+            JOIN inventory on rental.inventory_id=inventory.inventory_id 
+            JOIN movie on movie.movie_id=inventory.movie_id
+            WHERE transaction.user_id=".$customerid." AND rental.current_status=0";
+            $checked_out_rentals = $f3->get('db')->exec($get_checked_out_movies);
+            foreach($checked_out_rentals as $key=>$rental){
+                $release_date = $rental['date_released'];
+                $date_rented = $rental['rental_datetime'];
+                $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 4 : 5;
+                $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
+
+                $current_date = Date('Y-m-d H:i:s');
+                $checked_out_rentals[$key]['late'] = Date('Y-m-d H:i:s', strtotime($current_date)) > Date('Y-m-d H:i:s', strtotime($rental['due_datetime']));
+            }
+
+            $f3->set('rentals', $checked_out_rentals);
+
+            $f3->set('balance', $balance);
+            $f3->set('outstandings', $outstandings); 
         }
-
-        $date = new DateTime();
-        $date = $date->format('Y-m-d');
-
-        $query_eligible_purchases = "SELECT * FROM bill 
-        JOIN transaction ON bill.transaction_id=transaction.transaction_id
-        JOIN purchase ON purchase.transaction_id=transaction.transaction_id
-        JOIN inventory ON inventory.inventory_id=purchase.inventory_id 
-        JOIN movie ON movie.movie_id=inventory.movie_id
-        WHERE bill.user_id=".$customerid." AND return_end >'".$date."' 
-        AND return_datetime IS NULL";
-
-
-        $purchases = $f3->get('db')->exec($query_eligible_purchases);
-        $f3->set('purchases', $purchases);
-
-        $get_checked_out_movies = "SELECT * FROM transaction 
-        JOIN rental ON transaction.transaction_id=rental.transaction_id 
-        JOIN inventory on rental.inventory_id=inventory.inventory_id 
-        JOIN movie on movie.movie_id=inventory.movie_id
-        WHERE transaction.user_id=".$customerid." AND rental.current_status=0";
-        $checked_out_rentals = $f3->get('db')->exec($get_checked_out_movies);
-        foreach($checked_out_rentals as $key=>$rental){
-            $release_date = $rental['date_released'];
-            $date_rented = $rental['rental_datetime'];
-            $checked_out_rentals[$key]['rental_period'] = Date("Y-m-d", strtotime($date_rented)) < Date("Y-m-d", strtotime($release_date .' + 60 days')) ? 4 : 5;
-            $checked_out_rentals[$key]['formatted_date'] = Date("Y-m-d", strtotime($rental['due_datetime']));
-
-            $current_date = Date('Y-m-d H:i:s');
-            $checked_out_rentals[$key]['late'] = Date('Y-m-d H:i:s', strtotime($current_date)) > Date('Y-m-d H:i:s', strtotime($rental['due_datetime']));
-        }
-
-        $f3->set('rentals', $checked_out_rentals);
-
-        $f3->set('balance', $balance);
-        $f3->set('outstandings', $outstandings); 
 
         echo \Template::instance()->render('templates/master.htm');
     }
@@ -2015,7 +2030,7 @@ $f3->route('POST /admin/@adminid/pricing',
         new_release_vhs_rental=".$new_release.",
         dvd_rental=".$standard.",
         new_release_dvd_rental=".$new_release.",
-        bluray_rental=".$standard."
+        bluray_rental=".$standard.",
         new_release_bluray_rental=".$new_release;
         $f3->get('db')->exec($set_movie_standard_rental_prices);
 

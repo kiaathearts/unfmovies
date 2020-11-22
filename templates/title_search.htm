@@ -1,11 +1,12 @@
 
-<div class="container" style="margin-bottom: 50px">
+<div class="container" style="margin-bottom: 100px">
 	<div class="row">
 		<div class="col">
-			<p class="h1 mb-3">View {{ @title }} Inventory and Pricing</p>
+			<p class="h3">Inventory and Pricing</p>
+			<p class="h1 mb-3">{{ @title }}</p>
 		</div>
 	</div>
-	<div class="row mt-3">
+	<div class="row">
 		<div class="col"></div>
 		<div class="col">
 			<p class="h4"><strong>Stock</strong></p>
@@ -18,12 +19,12 @@
 		</div>
 	</div>
 	<form method="post" action="">
-		<div class="row">
+		<div class="row mb-3">
 			<div class="col">
-				<p class="h4"><strong>VHS</strong></p>
+				<p class="h4"><strong>VHS</strong></p><strong>Aisle # </strong>{{ @vhs.location }}
 			</div>
 			<div class="col">
-				<p><strong>Aisle# </strong>{{ @vhs.location }} - <strong>Qty</strong> {{ @vhs.inventory }}</p>
+					<strong>Qty</strong> {{ @vhs.inventory }}
 			</div>
 			<div class="col">
 				<p>{{ @vhs.rental }}</p>
@@ -32,12 +33,12 @@
 				<p>{{ @vhs.purchase }}</p>
 			</div>
 		</div>
-		<div class="row">
+		<div class="row mb-3">
 			<div class="col">
-				<p class="h4"><strong>DVD</strong></p>
+				<span class="h4"><strong>DVD</strong></span><br/><strong>Aisle # </strong>{{ @dvd.location }}
 			</div>
 			<div class="col">
-				<p><strong>Aisle# </strong> {{ @dvd.location }} - <strong>Qty</strong> {{ @dvd.inventory }}</p>
+				<strong>Qty</strong> {{ @dvd.inventory }}</p>
 			</div>
 			<div class="col">
 				<p>{{ @dvd.rental }}</p>
@@ -46,12 +47,12 @@
 				<p>{{ @dvd.purchase }}</p>
 			</div>
 		</div>
-		<div class="row">
+		<div class="row mb-3">
 			<div class="col">
-				<p class="h4"><strong>Blu-Ray</strong></p>
+				<span class="h4"><strong>Blu-Ray</strong></span><br/><strong>Aisle # </strong>{{ @bluray.location }}
 			</div>
 			<div class="col">
-				<p><strong>Aisle# </strong> {{ @bluray.location }} - <strong>Qty</strong> {{ @bluray.inventory }}</p>
+				<strong>Qty</strong> {{ @bluray.inventory }}</p>
 			</div>
 			<div class="col">
 				<p>{{ @bluray.rental }}</p>
@@ -60,7 +61,7 @@
 				<p>{{ @bluray.purchase }}</p>
 			</div>
 		</div>
-			<div class="row">
+		<div class="row mb-3">
 			<div class="col">
 				<p class="h4"><strong>Digital</strong></p>
 			</div>
