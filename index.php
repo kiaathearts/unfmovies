@@ -308,7 +308,6 @@ $f3->route('GET /movies',
             }
         }
 
-        // print_r($grouped_movies);
 
         $f3->set('grouped_movies', $grouped_movies);
 
@@ -1165,8 +1164,8 @@ $f3->route('GET /admin/reports/title/@movieid',
         $f3->set('admin', $_SESSION['admin']);
         $f3->set('page_title', 'Title Report');
         $f3->set('genres', $f3->get('db')->exec("SELECT * FROM genre ORDER BY genre_name ASC"));
-        $get_movie_title = "SELECT * FROM movie WHERE movie_id=".$f3->get('PARAMS.movieid');
-        $f3->set('movie_title', $f3->get('db')->exec($get_movie_title));
+        $get_movie_title = "SELECT title FROM movie WHERE movie_id=".$f3->get('PARAMS.movieid');
+        $f3->set('movie_title', $f3->get('db')->exec($get_movie_title)[0]['title']);
 
         //Gather all rental invoices for the movie3
         $rental_invoices = [];
@@ -1357,6 +1356,7 @@ function divide_by_week($rentals, $purchases, $start_date, $end_date){
             return $value_date>$date && $value_date<$date_limit;
         });
     }
+
     foreach($weeks as $week_date=>$values){
         $weeks[$week_date]['purchases'] = array_filter($purchases, function($value) use($week_date){
             $value_date = $value['purchase_datetime'];
