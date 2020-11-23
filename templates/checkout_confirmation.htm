@@ -12,7 +12,7 @@
 				<repeat group="{{ @rentals }}" value="{{ @rental }}">
 					<div>
 						{{ @rental['title'] }} ({{ @rental['inventory_type'] }})<br/>
-						<span style="margin-left: 20px">${{ @rental['daily'] }}.00/Day</span> | Due On {{ @rental['due'] }} </span><br/>
+						<span style="margin-left: 20px">${{ @rental['daily'] }}/Day</span> | Due On {{ @rental['due'] }} </span><br/>
 						<span style="margin-left: 20px"> {{ @rental['rental_period'] }} Day total: ${{ @rental['amount'] }}.00</span>
 					</div>
 				</repeat>
