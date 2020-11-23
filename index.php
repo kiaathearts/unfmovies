@@ -31,6 +31,7 @@ $f3->set('footscripts', 'templates/footscripts.htm');
 $f3->set('footer', 'templates/footer.htm');
 $f3->set('admin', false);
 $f3->set('customer', false);
+date_default_timezone_set('America/New_York');
 
 $f3->set('cart', new \Basket());
 
