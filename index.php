@@ -772,9 +772,9 @@ function cleanInput($input) {
         }
     }
     else {
-        if (get_magic_quotes_gpc()) {
-            $input = stripslashes($input);
-        }
+        // if (get_magic_quotes_gpc()) {
+        //     $input = stripslashes($input);
+        // }
         $input  = cleanInput($input);
         $output = $input;
     }
