@@ -521,9 +521,14 @@ $f3->route('GET /movies/@movieid',
         $f3->set('movieid', $movieid);
 
     	//retrieve movie from database by id here
-        $movie_query = "SELECT * FROM movie JOIN genre ON movie.genre_id=genre.genre_id JOIN director ON movie.director_id = director.director_id WHERE movie_id=".$movieid." ";
+        $movie_query = "SELECT * FROM movie 
+        JOIN genre ON movie.genre_id=genre.genre_id 
+        JOIN director ON movie.director_id = director.director_id  
+        WHERE movie.movie_id=".$movieid;
+
         $movie = $f3->get('db')->exec($movie_query)[0];
         $f3->set('page_title', 'View Movie');
+        $f3->set('available', $movie['available']);
 
         //Query image from API
         $url_query_title = str_replace(" ", "+", $movie['title']);
@@ -2089,8 +2094,6 @@ $f3->route('POST /admin/@adminid/pricing',
         new_release_vhs_rental=".$new_release.",
         new_release_dvd_rental=".$new_release.",
         new_release_bluray_rental=".$new_release;
-
-
 
         //Update everything
         if(trim($standard)!= ""){

@@ -42,9 +42,18 @@
 						<p>You have a balance of <?= ($SESSION['balance']) ?> and cannot checkout any movies until this has been resolved. Please, navigate to your profile and resolve your balance.</p>
 					
 					<?php else: ?>
-						<button type="button" class="btn btn-lg" style="color: #fff; background-color: #013F70" data-toggle="modal" data-target="#addToCart">
-						  Add to Cart
-						</button>
+						<?php if ($available): ?>
+							
+								<button type="button" class="btn btn-lg" style="color: #fff; background-color: #013F70" data-toggle="modal" data-target="#addToCart">
+								  Add to Cart
+								</button>
+							
+							<?php else: ?>
+								<button type="button" class="btn btn-lg" style="color: #fff; background-color: #013F70" data-toggle="modal" data-target="#addToCart" disabled>
+								  Unavailable
+								</button>
+							
+						<?php endif; ?>
 					
 				<?php endif; ?>
 
