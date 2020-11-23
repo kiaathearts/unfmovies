@@ -288,7 +288,6 @@ $f3->route('GET /movies',
         // $featured_movies = $f3->get('db')->exec($get_featured_movies);
         // foreach($featured_movies as $feature){
         //     $url = query_movie_poster($feature['title'], $feature['date_released']);
-        //     print_r("$url\n");
         // }
 
 
@@ -751,15 +750,47 @@ $f3->route('GET /profile/@userid',
     }
 );
 
+function cleanInput($input) {
+ 
+  $search = array(
+    '@<script[^>]*?>.*?</script>@si',   // Strip out javascript
+    '@<[\/\!]*?[^<>]*?>@si',            // Strip out HTML tags
+    '@<style[^>]*?>.*?</style>@siU',    // Strip style tags properly
+    '@<![\s\S]*?--[ \t\n\r]*>@',
+    '@\'@'
+         // Strip multi-line comments
+  );
+ 
+    $output = preg_replace($search, '', $input);
+    return $output;
+  }
+
+  function sanitize($input) {
+    if (is_array($input)) {
+        foreach($input as $var=>$val) {
+            $output[$var] = sanitize($val);
+        }
+    }
+    else {
+        if (get_magic_quotes_gpc()) {
+            $input = stripslashes($input);
+        }
+        $input  = cleanInput($input);
+        $output = $input;
+    }
+    return $output;
+}
+
 $f3->route('POST /movie/@userid/review/@movieid', 
     function($f3){
         $userid = $f3->get('PARAMS.userid');
         $movieid = $f3->get('PARAMS.movieid');
-        $review = $_POST['review'];
+        $review = sanitize($_POST['review']);
         $rating = $_POST['rating'];
-
+        print_r($review);
         $date = new DateTime();
         $date = $date->format('Y-m-d');
+
 
         $update_review = "INSERT INTO review (review_user_id, review_movie_id, review_stars, review_text, review_date) VALUES(".$userid.", ".$movieid.", ".$rating.", '".$review."', '".$date."')";
         $f3->get('db')->exec($update_review);
@@ -1226,10 +1257,6 @@ $f3->route('GET /admin/reports/title/@movieid',
         foreach($movie_purchase_instances as $movie){
             $total_purchases += $movie['payment_amount'];
         }
-        // echo "<pre>";
-        // print_r($movie['payment_amount']);
-        // echo "</pre>";
-        // print_r($total_purchases);
         $f3->set('total_purchases', $total_purchases);
         $totals_rental_purchase = $total_purchases + $total_rentals + $total_rental_fees;
         $f3->set('totals_rental_purchase', $totals_rental_purchase);
@@ -1345,9 +1372,6 @@ $f3->route('GET /admin/reports/genre',
 
 function divide_by_week($rentals, $purchases, $start_date, $end_date){
     $interval = new DateInterval('P1W');
-    $d_position = $end_date->format('N');
-    $days = 8-$d_position;
-    $end_date = $end_date->add(new DateInterval("P".$days."D"));
     $dateRange = new DatePeriod($start_date, $interval, $end_date);
 
     $weeks = array();
@@ -1604,15 +1628,13 @@ $f3->route('POST /admin/reports/genre',
                 $d_position = $compare->format('N');
                 $days = 8-$d_position;
                 $compare = $compare->add(new DateInterval("P".$days."D"));
-                $compare = $compare->format('Y-m-d');
+                $compare = $compare->format('Y-m-d H:i:s');
             }else{
                 $compare = $compare->format('Y-m-t');
             }
             $movie_purchase_query .=" AND purchase.purchase_datetime<='".$compare."'";
         }
-
         $movie_purchase_instances = $f3->get('db')->exec($movie_purchase_query);
-
         $total_purchases = 0;
         if(!empty($movie_purchase_instances)){
             foreach($movie_purchase_instances as $movie){
@@ -1631,7 +1653,9 @@ $f3->route('POST /admin/reports/genre',
 
         switch($interval){
             case 'weekly':
-                $weekly_values = divide_by_week($movie_rental_instances, $movie_purchase_instances, new DateTime($from_date), new DateTime($to_date));
+                $to_date = new DateTime($to_date);
+                $to_date = $to_date->add(new DateInterval("P1D"));
+                $weekly_values = divide_by_week($movie_rental_instances, $movie_purchase_instances, new DateTime($from_date), $to_date);
                 $f3->set('data', $weekly_values);
                 $f3->set('interval', 'Week');
             break;
@@ -2106,7 +2130,6 @@ $f3->route('POST /admin/@adminid/pricing',
             $f3->get('db')->exec($set_new_release_price);
             $f3->get('db')->exec($set_new_release_movie_price);
             $f3->set('new_release_price', $_POST['new_release']);
-            // print_r($prices_set);
         }
 
         // $get_prices = "SELECT * FROM pricing";
@@ -2472,7 +2495,6 @@ $f3->route('POST /movies/cart/add/@movieid',
                 $rental_period = 5;
             }
             $price = $movie[$cost_type];
-            print_r($price);
             $cost = $price * $rental_period;
         } 
 
