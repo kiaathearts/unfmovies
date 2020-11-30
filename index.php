@@ -212,7 +212,6 @@ function calculate_user_balance($f3, $userid){
                         $outstanding_array[$movie_data[0]['title']]['fees'] = $cost;
                          
                     }else{
-                        print_r($days);
                         switch($purchase_type){
                             case "vhs":
                                 $outstanding_array[$movie_data[0]['title']]['rental'] = $movie_data[0]['vhs_rental']; 
