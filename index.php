@@ -47,6 +47,7 @@ $f3->route('POST /login',
         $user = $f3->get('db')->exec($user_query)[0];
 
         if( !empty($user) ){
+            calculate_user_balance($f3, $user['user_id']);
             $_SESSION['logged_in'] = true;
             $_SESSION['userid'] = $user['user_id'];
             $_SESSION['balance'] = $user['balance'] == "" ? 0 : $user['balance'];
@@ -122,6 +123,7 @@ $f3->route('GET /logout',
 $f3->route('GET /',
     function($f3) {
         verify_login($f3);
+        calculate_user_balance($f3, $_SESSION['userid']);
         $f3->set('customer', $_SESSION['customer']);
         $f3->set('admin', $_SESSION['admin']);
         if($_SESSION['customer']){
@@ -210,6 +212,7 @@ function calculate_user_balance($f3, $userid){
                         $outstanding_array[$movie_data[0]['title']]['fees'] = $cost;
                          
                     }else{
+                        print_r($days);
                         switch($purchase_type){
                             case "vhs":
                                 $outstanding_array[$movie_data[0]['title']]['rental'] = $movie_data[0]['vhs_rental']; 
@@ -222,7 +225,7 @@ function calculate_user_balance($f3, $userid){
                                 break;
                         }
                         $outstanding_array[$movie_data[0]['title']]['fees'] = ($days*2);
-                        $balance += 2;
+                        $balance += ($days*2);
                     }
                 }else{
                     //Update rental table to reflect return date
@@ -581,6 +584,7 @@ $f3->route('GET /movies/@movieid',
         else
         {
             $obj = json_decode($response);
+            // print_r($obj);
             if(!$obj->error->code){
                 foreach($obj->items as $item){
                     if($item->snippet->channelTitle=="Movieclips"){
